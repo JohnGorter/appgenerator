@@ -1,0 +1,14 @@
+{
+    "app":{
+        "title":"hello world",
+        "subtitle":"from react",
+        "children": [
+            { "datasource": { "id":"1", "trigger":"2" } },
+            { "datasource": { "id":"3", "trigger":"4,2" } },
+            { "button" : {  "id":"2", "label":"press me" } },
+            { "button" : {  "id":"6", "label":"press me" } },
+            { "label" : {  "id":"4", "source":"3" } },
+            { "label" : {  "id":"7", "source":"3" } }
+        ]
+    }
+}
