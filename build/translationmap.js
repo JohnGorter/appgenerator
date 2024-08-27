@@ -14,6 +14,7 @@ class App extends window.React.Component
     render() {
         return (
               <div>
+             <h4>[[color]] </h4>
               <h1>[[title]]</h1>
               <h2>[[subtitle]]</h2>
                 { /* [[local]] */ } 
@@ -63,5 +64,8 @@ translationmap.set("label_declaration", { scope: 'global',
 ` });
 translationmap.set("label_execution", { scope: 'local',
     template: "<div><MyLabel text={##SOURCE##} click={() => {##TRIGGERS##}}> </MyLabel></div>"
+});
+translationmap.set("header_execution", { scope: 'local',
+    template: "<h1>generic placeholder [[label]]</h1>"
 });
 //# sourceMappingURL=translationmap.js.map

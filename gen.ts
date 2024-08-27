@@ -4,19 +4,19 @@ import { IRenderable, RenderWidget  } from "./ast.js";
 
 
 export class Generator {
-    #app:Object = {};
+    #app:any = {};
 
-    generate(location:string, app:appDec){
-      this.#app = app
-      fs.writeFileSync(location, this.#_generateCode(this.#_loadComponents()))  
+   async generate(target:any, app:appDec){
+      this.#app = app;
+      fs.writeFileSync(target.output, await this.#_generateCode(target, this.#_loadComponents()))  
     }
 
     #_loadComponents(){
         return RenderWidget.fromObject(this.#app) 
     }
 
-    #_generateCode(tree:any)
+    async #_generateCode(target:any, tree:any)
     {
-        return RenderWidget.render(tree) 
+        return await RenderWidget.render(target, tree) || "";
     }
 }

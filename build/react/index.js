@@ -1,6 +1,6 @@
 
 
-// [[global]] 
+ 
  
     let datasource1 = new class {
     #listeners
@@ -10,6 +10,7 @@
         this.#value = initialvalue;
     }
 
+    refresh(v){ this.#value = this.#value+1; this.notifyListeners(); }
     setValue(v){ this.#value = v; this.notifyListeners(); }
     getValue() { return this.#value }
     
@@ -17,7 +18,6 @@
         this.#listeners.push(l)
     }
     notifyListeners(){
-        console.log("number of listeners:", this.#listeners.length)
         this.#listeners.forEach(l => {
             console.log("l", l); 
             l(this.#value);
@@ -25,7 +25,7 @@
     }
 }(1);
     
-    let datasource3 = new class {
+    let datasource4 = new class {
     #listeners
     #value;
     constructor(initialvalue){  
@@ -33,6 +33,7 @@
         this.#value = initialvalue;
     }
 
+    refresh(v){ this.#value = this.#value+1; this.notifyListeners(); }
     setValue(v){ this.#value = v; this.notifyListeners(); }
     getValue() { return this.#value }
     
@@ -40,7 +41,6 @@
         this.#listeners.push(l)
     }
     notifyListeners(){
-        console.log("number of listeners:", this.#listeners.length)
         this.#listeners.forEach(l => {
             console.log("l", l); 
             l(this.#value);
@@ -48,8 +48,8 @@
     }
 }(1);
      
- let MYButton = ({click, children}) => <button onClick={click}>{children}</button>
-let MyLabel = ({text, click}) => <div onClick={click}>value: {text}</div>
+ let MyLabel = ({text, click}) => <div onClick={click}>value: {text}</div>
+let MYButton = ({click, children}) => <button onClick={click}>{children}</button>
 
 
 class App extends window.React.Component
@@ -57,30 +57,46 @@ class App extends window.React.Component
     constructor(props){
         super(props); 
         this.state = {}; 
-        { /* [[setup]] */ } 
+         
  
         datasource1.addListener(() => this.setState({}))
         
-        datasource3.addListener(() => this.setState({}))
+        datasource4.addListener(() => this.setState({}))
           
     }
 
     render() {
         return (
               <div>
-              <h1>hello world</h1>
-              <h2>from react</h2>
-                { /* [[local]] */ } 
- <div>Button <MYButton click={() => {datasource1.setValue(datasource1.getValue() + 1)
-datasource3.setValue(datasource3.getValue() + 1)
-}}>Increment</MYButton></div><div>Button <MYButton click={() => {}}>Increment</MYButton></div><div><MyLabel text={datasource3.getValue()
-} click={() => {datasource3.setValue(datasource3.getValue() + 1)
-}}> </MyLabel></div><div><MyLabel text={datasource3.getValue()
-} click={() => {}}> </MyLabel></div> 
+             <h4>red </h4>
+              <h1>Jeroen</h1>
+              <h2>john</h2>
+                 
+ <div><MyLabel text={datasource4.getValue()
+} click={() => {}}> </MyLabel></div><div><MyLabel text={datasource4.getValue()
+} click={() => {datasource4.refresh(event);
+}}> </MyLabel></div><div><MyLabel text={datasource4.getValue()
+} click={() => {}}> </MyLabel></div><div>Button <MYButton click={() => {datasource1.refresh(event);
+}}>increment me</MYButton></div><div>Button <MYButton click={() => {datasource4.refresh(event);
+}}>increment me not</MYButton></div><marquee>generic placeholder txcxcxzcest</marquee><marquee>generic placeholder uhhohoh</marquee> 
              </div>
           )
         }
 }
+
+class StateMnmgt {
+  state = []; 
+  getState(id) {
+    return this.state.find((s) => s.id == id)?.value
+  }
+  setState(id, value) {
+    for (let item of this.state) {
+        if (item.id == id) { item.value = value; return; }  
+    }
+    this.state.push({id, value});
+  } 
+}
+window.statemanagement = new StateMnmgt(); 
 
 let root = window.ReactDOM.createRoot(document.querySelector("#main"))
 root.render(<App />);
