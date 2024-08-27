@@ -1,0 +1,17 @@
+{
+    "app":{
+        "target":"react",
+        "title":"Jeroen",
+        "subtitle":"john",
+        "color":"red",
+        "children": [
+            { "datasource" : { "id":"1", "trigger":"5" } },
+            { "detaildatasource" : { "id":"2", "trigger":"3" } },
+            { "list": { "source":"1", "id":"3"}},
+            { "detail": { "source":"2", "id":"4"}},
+            { "input": { "source":"1", "id":"5"}}
+           
+          
+        ]
+    }
+}

@@ -1,0 +1,6 @@
+{
+    "targets": {
+        "flutter": { "output": "./build/flutter/lib/main.dart", "translationmap": "flutter" },
+        "react": { "output": "./build/react/index.js", "translationmap": "react" }
+    }
+}
