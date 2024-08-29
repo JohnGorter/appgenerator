@@ -1,4 +1,4 @@
-let translationmap = null;
+let globaltranslation = undefined;
 export class Renderable {
     id;
     children = [];
@@ -30,45 +30,48 @@ export class Renderable {
         }
         return result;
     }
-    renderLocalScope() {
-        let template = this._renderScope("execution");
+    async renderLocalScope() {
+        return await this._renderScope("execution");
+    }
+    async renderDeclaration() {
+        return await this._renderScope("declaration");
+    }
+    async renderGlobalScope() {
+        return await this._renderScope("global");
+    }
+    async renderSetupScope() {
+        return await this._renderScope("setup");
+    }
+    async _renderScope(scope) {
+        let result = await globaltranslation.getTemplate(this.constructor.name.toLowerCase(), scope);
+        if (!result)
+            return "";
+        let template = this.parseResult(result);
         let me = this;
-        if (me.source) {
-            let statements = this._renderStatements("source", [me.source]);
-            template = template.replaceAll(`##SOURCE##`, statements);
-        }
         let statements = "";
+        if (me.source) {
+            statements = this._renderStatements("source", [me.source], undefined);
+        }
+        template = template.replaceAll(`##SOURCE##`, statements);
+        statements = "";
         if (me.triggers) {
-            statements = this._renderStatements("trigger", me.triggers.map((t) => t.id));
+            let triggers = me.triggers.split(",");
+            console.log("triggers:", triggers);
+            statements = this._renderStatements("trigger", triggers, me.action);
         }
         template = template.replaceAll(`##TRIGGERS##`, statements);
         return template;
     }
-    renderDeclaration() {
-        return this._renderScope("declaration");
-    }
-    renderGlobalScope() {
-        return this._renderScope("global");
-    }
-    renderSetupScope() {
-        return this._renderScope("setup");
-    }
-    _renderScope(scope) {
-        let result = translationmap.get(this.constructor.name.toLowerCase() + "_" + scope)?.template;
-        if (!result)
-            return "";
-        return this.parseResult(result);
-    }
-    _renderStatements(target, placeholders) {
+    _renderStatements(target, placeholders, action) {
         let statements = "";
         if (target == "trigger")
             // let params = null;
             for (let t of placeholders) {
-                statements += `datasource${t}.refresh(event);\n`;
+                statements += `datasource${t}.${action || 'refresh'}(event);\n`;
             }
         if (target == "source")
             for (let t of placeholders) {
-                statements += `datasource${t}.getValue()\n`;
+                statements += `datasource${t}.${action || 'getValue'}()\n`;
             }
         statements = statements + "";
         return statements;
@@ -104,63 +107,65 @@ export class RenderWidget {
         console.log("o", target.id);
         let tree = ctor ? new ctor(target.id, target) : null;
         if (tree) {
-            // resolve triggers and sources
-            for (let c of tree.children) {
-                let b = c;
-                if (b.trigger != null) {
-                    let triggers = b.trigger.split(",");
-                    for (let t of triggers) {
-                        let e = RenderWidget.findTreeElement(t, tree);
-                        if (e) {
-                            e.triggers = e.triggers || [];
-                            e.triggers.push(c);
-                        }
-                    }
-                }
-            }
+            // // resolve triggers and sources
+            // for(let c of tree.children) {
+            // let b:any = c;
+            // if (b.trigger != null) {
+            //     let triggers = b.trigger.split(",")
+            //     for (let t of triggers) {
+            //     let e = RenderWidget.findTreeElement(t, tree)
+            //      if (e) {
+            //         e.triggers = e.triggers || [];
+            //         e.triggers.push(c)
+            //      }
+            //     }
+            // }
+            // }
         }
         return tree;
     }
-    static render(target, root) {
-        return import(`./translationmap.${target.translationmap}.js`).then(m => {
-            translationmap = m.translationmap;
-            let template = translationmap.get("root")?.template;
-            if (!template)
-                return "-- error -- missing template";
-            let ls = '{ /* [[local]] */ }';
-            let gs = '// [[global]]';
-            let su = '{ /* [[setup]] */ }';
-            template = root.parseResult(template);
-            // walk the tree and render the global section
-            let r = "";
-            let types = [];
-            for (let c of root.children) {
-                if (types.find(t => t == c.constructor.name))
-                    continue;
-                r += c.renderDeclaration();
-                types.push(c.constructor.name);
-            }
-            template = template.replaceAll(`${gs}`, `${gs} \n ${r}`);
-            // walk the tree and render the global section
-            r = "";
-            for (let c of root.children) {
-                r += c.renderGlobalScope();
-            }
-            template = template.replaceAll(`${gs}`, `${gs} \n ${r}`);
-            // walk the tree and render the global section
-            let l = "";
-            for (let c of root.children) {
-                l += c.renderLocalScope();
-            }
-            template = template.replaceAll(`${ls}`, `${ls} \n ${l}`);
-            // walk the tree and render the global section
-            let s = "";
-            for (let c of root.children) {
-                s += c.renderSetupScope();
-            }
-            template = template.replaceAll(`${su}`, `${su} \n ${s}`);
-            return template.replaceAll(gs, "").replaceAll(ls, "").replaceAll(su, "");
-        });
+    static async render(target, root, translation) {
+        //return import(`./translationmap.${target.translationmap}.js`).then(m => {
+        //    translationmap = m.translationmap;
+        // let template = translationmap.get("root")?.template
+        globaltranslation = translation;
+        let template = await translation.getTemplate("root");
+        if (!template)
+            return "-- error -- missing template";
+        let ls = '{ /* [[local]] */ }';
+        let gs = '// [[global]]';
+        let su = '{ /* [[setup]] */ }';
+        template = root.parseResult(template);
+        // walk the tree and render the global section
+        let r = "";
+        let types = [];
+        for (let c of root.children) {
+            if (types.find(t => t == c.constructor.name))
+                continue;
+            r += await c.renderDeclaration();
+            types.push(c.constructor.name);
+        }
+        template = template.replaceAll(`${gs}`, `${gs} \n ${r}`);
+        // walk the tree and render the global section
+        r = "";
+        for (let c of root.children) {
+            r += await c.renderGlobalScope();
+        }
+        template = template.replaceAll(`${gs}`, `${gs} \n ${r}`);
+        // walk the tree and render the global section
+        let l = "";
+        for (let c of root.children) {
+            l += await c.renderLocalScope();
+        }
+        template = template.replaceAll(`${ls}`, `${ls} \n ${l}`);
+        // walk the tree and render the global section
+        let s = "";
+        for (let c of root.children) {
+            s += await c.renderSetupScope();
+        }
+        template = template.replaceAll(`${su}`, `${su} \n ${s}`);
+        return template.replaceAll(gs, "").replaceAll(ls, "").replaceAll(su, "");
+        // });
     }
 }
 //# sourceMappingURL=ast.js.map

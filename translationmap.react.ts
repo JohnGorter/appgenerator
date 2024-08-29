@@ -77,14 +77,17 @@ translationmap.set("numberdatasource_global", { scope:'global', template: `
             let datasource[[id]] = new class {
             #listeners
             #value;
+            #filtered;
             constructor(initialvalue){  
                 this.#listeners = []
                 this.#value = initialvalue;
+                this.#filtered = initialvalue;
             }
         
             refresh(v){ this.#value.push(v);this.notifyListeners();}
             setValue(v){ this.#value = v; this.notifyListeners(); }
-            getValue() { return this.#value }
+            getValue() { return this.#filtered }
+            filter(f) { if (!f) this.#filtered = this.#value; else this.#filtered = this.#value.filter(e => e == f); this.notifyListeners()}
             
             addListener(l){
                 this.#listeners.push(l)
@@ -92,11 +95,11 @@ translationmap.set("numberdatasource_global", { scope:'global', template: `
             notifyListeners(){
                 console.log("number of listeners:", this.#listeners.length)
                 this.#listeners.forEach(l => {
-                    console.log("l", l); 
                     l(this.#value);
                 })
             }
         }(['a','b','c','d']);
+
     `})
         
     translationmap.set("datasource_setup", { scope:'setup', template: `
@@ -121,9 +124,7 @@ translationmap.set("numberdatasource_global", { scope:'global', template: `
                         this.#listeners.push(l)
                     }
                     notifyListeners(){
-                        console.log("number of listeners:", this.#listeners.length)
                         this.#listeners.forEach(l => {
-                            console.log("l", l); 
                             l(this.#value);
                         })
                     }
@@ -150,8 +151,22 @@ translationmap.set("detail_execution", { scope:'global',
 `})
 
 translationmap.set("input_execution", { scope:'global', 
-    template: `<input type="text" placeholder="new value" onChange={(e) => window.statemanagement.setState([[id]], e.target.value)}></input><input type="submit" onClick={(e) => {let event = window.statemanagement.getState([[id]]);##TRIGGERS##}}></input>
+    template: `<input type="text" placeholder={String(##SOURCE##)} value={window.statemanagement.getState([[id]]) || ''} onChange={(e) => this.handleChange[[id]](e)}></input><input type="submit" onClick={(e) => {let event = window.statemanagement.getState([[id]]);##TRIGGERS##}}></input>
 `})
+
+translationmap.set("input_setup", { scope:'global', 
+    template: `
+    this.handleChange[[id]] = function(e) {  window.statemanagement.setState([[id]], e.target.value); this.setState({});};`})
+
+
+
+translationmap.set("search_execution", { scope:'global', 
+    template: `<input type="text" placeholder={String(##SOURCE##)} value={window.statemanagement.getState([[id]]) || ''} onChange={(e) => this.handleChange[[id]](e)}></input><input type="submit" value="search" onClick={(e) => {let event = window.statemanagement.getState([[id]]);##TRIGGERS##}}></input>
+`})
+
+translationmap.set("search_setup", { scope:'global', 
+    template: `
+    this.handleChange[[id]] = function(e) {  window.statemanagement.setState([[id]], e.target.value); this.setState({});};`})
 
 translationmap.set("button_execution", { scope:'local', 
     template: "<div>Button <MYButton click={() => {##TRIGGERS##}}>[[label]]</MYButton></div>"
@@ -170,4 +185,8 @@ translationmap.set("header_execution", { scope:'local',
 
 translationmap.set("footer_execution", { scope:'local', 
     template: "<marquee>generic placeholder [[label]]</marquee>"
+})
+
+translationmap.set("arjan_execution", { scope:'local', 
+    template: "<b>[[label]]</b>"
 })

@@ -6,6 +6,27 @@ translationmap.set("root", { template: `
 
 import 'package:flutter/material.dart';
 
+class StateEntry {
+  late int id;
+  dynamic value;
+  StateEntry({required this.id, this.value});
+}
+
+class StateMnmgt {
+  List<StateEntry> state = []; 
+  getState(id) {
+    return state.where((s) => s.id == id).first.value;
+  }
+  setState(int id, value) {
+    for (var item in state) {
+        if (item.id == id) { item.value = value; return; }  
+    }
+    state.add(StateEntry(id:id, value:value));
+  } 
+}
+StateMnmgt statemanagement = StateMnmgt(); 
+
+
 // [[global]]
 
 void main() { 
@@ -137,12 +158,12 @@ translationmap.set("numberdatasource_declaration", { scope:'global', template: `
                 
              }
      
-             _refresh() {
+             _refresh(e) {
                _value = _value + 1;
              }
      
-             refresh() {
-               _refresh(); 
+             refresh(e) {
+               _refresh(e); 
                notifyListeners(); 
              }
      
@@ -163,12 +184,12 @@ translationmap.set("numberdatasource_declaration", { scope:'global', template: `
                 
              }
      
-             _refresh(id) {
-               _detail = "detail for $id";
+             _refresh(e) {
+               _detail = statemanagement.getState([[stateid]])[e];
              }
      
-             refresh() {
-               _refresh(0); 
+             refresh(e) {
+               _refresh(e); 
                notifyListeners(); 
              }
      
@@ -191,7 +212,8 @@ translationmap.set("numberdatasource_declaration", { scope:'global', template: `
 
              translationmap.set("datasource_declaration", { scope:'global', template: `
                 class DataSource extends ChangeNotifier {
-                 List<String> _value =  List.generate(1000, (i) => "John Gorter $i");
+                List<String> _value = [];
+                List<String> filteredvalue = [];
                  List<String> get value => _value;
                  set value(v) {
                      _value = v;
@@ -199,16 +221,21 @@ translationmap.set("numberdatasource_declaration", { scope:'global', template: `
                     
                  }
          
-                 _refresh() {
-                   _value = List.generate(1000, (i) => "hello world $i");
+                 add(argument) {
+                   _value.add(argument);
+                 }
+                 filter(f){
+                    if (f == "") filteredvalue = _value;
+                    else filteredvalue = _value.where((v) => v.indexOf(f) >= 0).toList();
+                    statemanagement.setState([[stateid]], filteredvalue);
+                    notifyListeners();
                  }
          
-                 refresh() {
-                   _refresh(); 
+                 refresh(argument) {
                    notifyListeners(); 
                  }
          
-                 List<String> getValue() => _value; 
+                 List<String> getValue() => filteredvalue; 
                  setValue(v) { _value = v; notifyListeners(); }
          
                  }
@@ -220,13 +247,17 @@ translationmap.set("numberdatasource_declaration", { scope:'global', template: `
            })
          
              translationmap.set("datasource_setup", { scope:'setup', template: `
+               datasource[[id]].value = List.generate(10, (i) => "John Gorter $i");
+               datasource[[id]].filteredvalue = datasource[[id]]._value;
+               statemanagement.setState([[stateid]], datasource[[id]].filteredvalue);
+               
                  datasource[[id]].addListener((){
                    setState(() {});
                  });
                  `})
 
 translationmap.set("button_execution", { scope:'local', 
-    template: 'ElevatedButton( onPressed: () { ##TRIGGERS## } , child: const Text("[[label]]")),'
+    template: 'ElevatedButton( onPressed: () { dynamic event; ##TRIGGERS## } , child: const Text("[[label]]")),'
 })
 
 translationmap.set("list_declaration", { scope:'local', 
@@ -239,18 +270,33 @@ translationmap.set("list_setup", { scope:'local',
     listviewchildren[[id]].add(ListTile(title:Text("john")));`
 })
 translationmap.set("list_execution", { scope:'local', 
-    template: "Expanded(child:ListView(children:datasource1.getValue().map((v) => ListTile(onTap: () { ##TRIGGERS## },title:Text(v))).toList())),",
+    template: "Expanded(child:ListView(children:##SOURCE##.indexed.map((v) => ListTile(onTap: () { dynamic event = v.$1;##TRIGGERS## },title:Text(v.$2))).toList())),",
 })
 
 translationmap.set("label_execution", { scope:'local', 
-    template: 'GestureDetector(onTap:(){ ##TRIGGERS## }, child:Text("${##SOURCE##}", style: Theme.of(context).textTheme.headlineMedium)),'
+    template: 'GestureDetector(onTap:(){ dynamic event;##TRIGGERS## }, child:Text("${##SOURCE##}", style: Theme.of(context).textTheme.headlineMedium)),'
 })
 
 
+translationmap.set("detail_execution", { scope:'local', 
+    template: `Text(##SOURCE##),`
+})
+
 translationmap.set("header_execution", { scope:'local', 
-    template: `Text("[[label]]"),`
+  template: `Text("[[label]]"),`
 })
 
 translationmap.set("footer_execution", { scope:'local', 
      template: `Text("[[label]]"),`
 })
+
+translationmap.set("input_execution", { scope:'global', 
+  template: 'TextField(  obscureText: false,  decoration:  InputDecoration( border: OutlineInputBorder(), labelText: "Name", hintText: "${##SOURCE##}") ,onChanged: (value) => statemanagement.setState([[id]], value),),TextButton(child:Text("save"), onPressed:() { dynamic event = statemanagement.getState([[id]]); ##TRIGGERS##;}),'})
+
+
+  translationmap.set("search_execution", { scope:'global', 
+    template: 'TextField(  obscureText: false,  decoration:  InputDecoration( border: OutlineInputBorder()) ,onChanged: (value) => statemanagement.setState([[id]], value),),TextButton(child:Text("search"), onPressed:() { dynamic event = statemanagement.getState([[id]]); ##TRIGGERS##;}),'})
+
+    translationmap.set("arjan_execution", { scope:'local', 
+      template: `Text("hi i am arjan")`
+  })

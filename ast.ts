@@ -1,11 +1,13 @@
-let translationmap:any = null;
+import { Translation } from './transation.js'
+
+let globaltranslation:Translation|undefined = undefined;
 
 export interface IRenderable {
     children:IRenderable[];
-    renderDeclaration() : string; 
-    renderGlobalScope() : string; 
-    renderLocalScope() : string; 
-    renderSetupScope() : string; 
+    renderDeclaration() : Promise<String>; 
+    renderGlobalScope() : Promise<String>; 
+    renderLocalScope() : Promise<String>; 
+    renderSetupScope() : Promise<String>; 
 }
 
 export class Renderable implements IRenderable {
@@ -40,49 +42,53 @@ export class Renderable implements IRenderable {
      return result;
     }
 
-    renderLocalScope(): string {
-       let template =  this._renderScope("execution")
-       let me:any = this;
-       if (me.source) {
-        let statements = this._renderStatements("source", [me.source]);
-        template = template.replaceAll(`##SOURCE##`, statements)
-       }
-       let statements = "";
-       if (me.triggers) {
-        statements = this._renderStatements("trigger", me.triggers.map((t:any)=>t.id))
-       }        
-       template = template.replaceAll(`##TRIGGERS##`, statements)
-       return template
+    async renderLocalScope(): Promise<String> {
+       return await this._renderScope("execution")
      }
 
-     renderDeclaration(): string {
-        return this._renderScope("declaration")
+     async renderDeclaration(): Promise<String> {
+        return await this._renderScope("declaration")
      }
-     renderGlobalScope(): string {
-        return this._renderScope("global")
+     async renderGlobalScope(): Promise<String> {
+        return await this._renderScope("global")
      }
       
-    renderSetupScope(): string {
-       return this._renderScope("setup")
+     async renderSetupScope(): Promise<String> {
+       return await this._renderScope("setup")
     }
 
-    _renderScope(scope:String){
-        let result =  translationmap.get(this.constructor.name.toLowerCase() + "_" + scope)?.template;
+    async _renderScope(scope:String){
+        let result =  await globaltranslation!.getTemplate(this.constructor.name.toLowerCase(),scope);
         if (!result) return ""
-        return this.parseResult(result);
+        let template = this.parseResult(result);
+        let me:any = this;
+        let statements = "";
+        if (me.source) {
+            statements = this._renderStatements("source", [me.source], undefined);
+        }
+        template = template.replaceAll(`##SOURCE##`, statements)
+        
+        statements = "";
+        if (me.triggers) {
+            let triggers = me.triggers.split(",")
+            console.log("triggers:", triggers);
+            statements = this._renderStatements("trigger", triggers, me.action)
+        }        
+        template = template.replaceAll(`##TRIGGERS##`, statements)
+        return template
     }
 
-    _renderStatements(target:String, placeholders:String[]) {
+    _renderStatements(target:String, placeholders:String[], action:String|undefined) {
         let statements = "";
         if (target == "trigger")
            // let params = null;
             for (let t of placeholders) {
-                statements += `datasource${t}.refresh(event);\n`
+                statements += `datasource${t}.${action || 'refresh'}(event);\n`
             }
 
         if (target == "source")
             for (let t of placeholders) {
-                statements += `datasource${t}.getValue()\n`
+                statements += `datasource${t}.${action || 'getValue'}()\n`
             }
         statements = statements + ""
         return statements;
@@ -121,30 +127,32 @@ export class RenderWidget {
         console.log("o", target.id);  
         let tree =  ctor ? new ctor(target.id, target) as IRenderable : null
         if (tree) {
-            // resolve triggers and sources
-            for(let c of tree.children) {
-            let b:any = c;
-            if (b.trigger != null) {
-                let triggers = b.trigger.split(",")
-                for (let t of triggers) {
-                let e = RenderWidget.findTreeElement(t, tree)
-                 if (e) {
+            // // resolve triggers and sources
+            // for(let c of tree.children) {
+            // let b:any = c;
+            // if (b.trigger != null) {
+            //     let triggers = b.trigger.split(",")
+            //     for (let t of triggers) {
+            //     let e = RenderWidget.findTreeElement(t, tree)
+            //      if (e) {
 
-                    e.triggers = e.triggers || [];
-                    e.triggers.push(c)
-                 }
-                }
-            }
+            //         e.triggers = e.triggers || [];
+            //         e.triggers.push(c)
+            //      }
+            //     }
+            // }
             
-          }
+         // }
         }
         return tree;
     }
 
-    static render(target:any, root:Renderable):Promise<string>{
-       return import(`./translationmap.${target.translationmap}.js`).then(m => {
-            translationmap = m.translationmap;
-            let template = translationmap.get("root")?.template
+    static async render(target:any, root:Renderable, translation:Translation):Promise<string>{
+       //return import(`./translationmap.${target.translationmap}.js`).then(m => {
+        //    translationmap = m.translationmap;
+           // let template = translationmap.get("root")?.template
+            globaltranslation = translation;
+            let template = await translation.getTemplate("root")
             if (!template) return "-- error -- missing template"
             let ls = '{ /* [[local]] */ }'
             let gs = '// [[global]]'
@@ -158,7 +166,7 @@ export class RenderWidget {
             let types:any[] = [];
             for (let c of root.children) {
                 if (types.find(t => t == c.constructor.name)) continue
-                r += c.renderDeclaration() 
+                r += await c.renderDeclaration() 
                 types.push(c.constructor.name)
     
             }
@@ -168,25 +176,25 @@ export class RenderWidget {
             // walk the tree and render the global section
             r = ""; 
             for (let c of root.children) {
-                r += c.renderGlobalScope() 
+                r += await c.renderGlobalScope() 
             }
             template = template.replaceAll(`${gs}`, `${gs} \n ${r}`)
 
             // walk the tree and render the global section
             let l = ""; 
             for (let c of root.children) {
-                l += c.renderLocalScope() 
+                l += await c.renderLocalScope() 
             }
             template = template.replaceAll(`${ls}`, `${ls} \n ${l}`)
 
             // walk the tree and render the global section
             let s = ""; 
             for (let c of root.children) {
-                s += c.renderSetupScope() 
+                s += await c.renderSetupScope() 
             }
             template = template.replaceAll(`${su}`, `${su} \n ${s}`)
         
             return template.replaceAll(gs, "").replaceAll(ls, "").replaceAll(su, "")
-        });
+       // });
     }
 }

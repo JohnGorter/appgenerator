@@ -78,7 +78,7 @@ class App extends window.React.Component
 }}> </MyLabel></div><div><MyLabel text={datasource4.getValue()
 } click={() => {}}> </MyLabel></div><div>Button <MYButton click={() => {datasource1.refresh(event);
 }}>increment me</MYButton></div><div>Button <MYButton click={() => {datasource4.refresh(event);
-}}>increment me not</MYButton></div><marquee>generic placeholder txcxcxzcest</marquee><marquee>generic placeholder uhhohoh</marquee> 
+}}>increment me not</MYButton></div><marquee>generic placeholder txcxcxzcest</marquee><marquee>generic placeholder uhhohoh</marquee><b>hi i am arjan</b> 
              </div>
           )
         }
