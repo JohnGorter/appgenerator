@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+// [[imports]] 
+ 
 
 class StateEntry {
   late int id;
@@ -20,33 +22,8 @@ class StateMnmgt {
 
 StateMnmgt statemanagement = StateMnmgt(); 
  
+  
  
-   NumberDataSource datasource1 = NumberDataSource();
-   NumberDataSource datasource4 = NumberDataSource(); 
- 
-            class NumberDataSource extends ChangeNotifier {
-             int _value =  0;
-             int get value => _value;
-             set value(v) {
-                 _value = v;
-                 notifyListeners();
-                
-             }
-     
-             _refresh(e) {
-               _value = _value + 1;
-             }
-     
-             refresh(e) {
-               _refresh(e); 
-               notifyListeners(); 
-             }
-     
-             int getValue() => _value; 
-             setValue(v) { _value = v; notifyListeners(); }
-     
-             }
-         
 
 void main() { 
     runApp(const MyApp());
@@ -80,15 +57,7 @@ class _MyHomePageState extends State<MyHomePage> {
    @override
   void initState() {
      
- 
-        datasource1.addListener((){
-          setState(() {});
-        });
   
-        datasource4.addListener((){
-          setState(() {});
-        });
-   
     super.initState();
   }
 
@@ -104,13 +73,7 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
              
- GestureDetector(onTap:(){ dynamic event; }, child:Text("${datasource4.getValue()
-}", style: Theme.of(context).textTheme.headlineMedium)),GestureDetector(onTap:(){ dynamic event;datasource4.refresh(event);
- }, child:Text("${datasource4.getValue()
-}", style: Theme.of(context).textTheme.headlineMedium)),GestureDetector(onTap:(){ dynamic event; }, child:Text("${datasource4.getValue()
-}", style: Theme.of(context).textTheme.headlineMedium)),ElevatedButton( onPressed: () { dynamic event; datasource1.refresh(event);
- } , child: const Text("increment me")),ElevatedButton( onPressed: () { dynamic event; datasource4.refresh(event);
- } , child: const Text("increment me not")),Text("txcxcxzcest"),Text("uhhohoh"),Text("hi i am arjan")
+ 
           ],
         ),
       ), // This trailing comma makes auto-formatting nicer for build methods.

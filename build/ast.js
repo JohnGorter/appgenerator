@@ -42,6 +42,9 @@ export class Renderable {
     async renderSetupScope() {
         return await this._renderScope("setup");
     }
+    async renderImportScope() {
+        return await this._renderScope("imports");
+    }
     async _renderScope(scope) {
         let result = await globaltranslation.getTemplate(this.constructor.name.toLowerCase(), scope);
         if (!result)
@@ -57,7 +60,7 @@ export class Renderable {
         if (me.triggers) {
             let triggers = me.triggers.split(",");
             console.log("triggers:", triggers);
-            statements = this._renderStatements("trigger", triggers, me.action);
+            statements = this._renderStatements("trigger", triggers, me.action || me.label);
         }
         template = template.replaceAll(`##TRIGGERS##`, statements);
         return template;
@@ -135,7 +138,19 @@ export class RenderWidget {
         let ls = '{ /* [[local]] */ }';
         let gs = '// [[global]]';
         let su = '{ /* [[setup]] */ }';
+        let imports = '// [[imports]]';
         template = root.parseResult(template);
+        // walk the tree and render the global section
+        let i = "";
+        let importlines = [];
+        for (let c of root.children) {
+            let line = await c.renderImportScope();
+            if (importlines.find(t => line))
+                continue;
+            i += line;
+            importlines.push(line);
+        }
+        template = template.replaceAll(`${imports}`, `${imports} \n ${i}`);
         // walk the tree and render the global section
         let r = "";
         let types = [];

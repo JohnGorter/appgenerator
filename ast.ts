@@ -8,6 +8,7 @@ export interface IRenderable {
     renderGlobalScope() : Promise<String>; 
     renderLocalScope() : Promise<String>; 
     renderSetupScope() : Promise<String>; 
+    renderImportScope(): Promise<String>;
 }
 
 export class Renderable implements IRenderable {
@@ -57,6 +58,10 @@ export class Renderable implements IRenderable {
        return await this._renderScope("setup")
     }
 
+    async renderImportScope(): Promise<String> {
+        return await this._renderScope("imports")
+     }
+
     async _renderScope(scope:String){
         let result =  await globaltranslation!.getTemplate(this.constructor.name.toLowerCase(),scope);
         if (!result) return ""
@@ -72,7 +77,7 @@ export class Renderable implements IRenderable {
         if (me.triggers) {
             let triggers = me.triggers.split(",")
             console.log("triggers:", triggers);
-            statements = this._renderStatements("trigger", triggers, me.action)
+            statements = this._renderStatements("trigger", triggers, me.action || me.label)
         }        
         template = template.replaceAll(`##TRIGGERS##`, statements)
         return template
@@ -147,7 +152,66 @@ export class RenderWidget {
         return tree;
     }
 
+
     static async render(target:any, root:Renderable, translation:Translation):Promise<string>{
+        globaltranslation = translation;
+        let template = await translation.getTemplate("root")
+        if (!template) return "-- error -- missing template"
+        let ls = '{ /* [[local]] */ }'
+        let gs = '// [[global]]'
+        let su = '{ /* [[setup]] */ }'
+        let imports = '// [[imports]]'
+
+        template = root.parseResult(template)
+        
+        // walk the tree and render the global section
+        let i = ""; 
+        let importlines:any[] = [];
+        for (let c of root.children) {
+            let line = await c.renderImportScope() 
+            if (importlines.find(t => line)) continue
+            i += line
+            importlines.push(line)
+        }
+        template = template.replaceAll(`${imports}`, `${imports} \n ${i}`)
+
+        // walk the tree and render the global section
+        let r = ""; 
+        let types:any[] = [];
+        for (let c of root.children) {
+            if (types.find(t => t == c.constructor.name)) continue
+            r += await c.renderDeclaration() 
+            types.push(c.constructor.name)
+
+        }
+
+        template = template.replaceAll(`${gs}`, `${gs} \n ${r}`)
+
+        // walk the tree and render the global section
+        r = ""; 
+        for (let c of root.children) {
+            r += await c.renderGlobalScope() 
+        }
+        template = template.replaceAll(`${gs}`, `${gs} \n ${r}`)
+
+        // walk the tree and render the global section
+        let l = ""; 
+        for (let c of root.children) {
+            l += await c.renderLocalScope() 
+        }
+        template = template.replaceAll(`${ls}`, `${ls} \n ${l}`)
+
+        // walk the tree and render the global section
+        let s = ""; 
+        for (let c of root.children) {
+            s += await c.renderSetupScope() 
+        }
+        template = template.replaceAll(`${su}`, `${su} \n ${s}`)
+    
+        return template.replaceAll(gs, "").replaceAll(ls, "").replaceAll(su, "")
+    }
+
+    static async _render(target:any, root:Renderable, translation:Translation):Promise<string>{
        //return import(`./translationmap.${target.translationmap}.js`).then(m => {
         //    translationmap = m.translationmap;
            // let template = translationmap.get("root")?.template
@@ -157,9 +221,20 @@ export class RenderWidget {
             let ls = '{ /* [[local]] */ }'
             let gs = '// [[global]]'
             let su = '{ /* [[setup]] */ }'
+            let imports = '// [[imports]]'
 
             template = root.parseResult(template)
             
+            // walk the tree and render the global section
+            let i = ""; 
+            let importlines:any[] = [];
+            for (let c of root.children) {
+                let line = await c.renderImportScope() 
+                if (importlines.find(t => line)) continue
+                i += line
+                importlines.push(line)
+            }
+            template = template.replaceAll(`${imports}`, `${imports} \n ${i}`)
 
             // walk the tree and render the global section
             let r = ""; 
