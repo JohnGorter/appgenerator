@@ -1,31 +1,4 @@
-import 'package:flutter/material.dart';
-// [[imports]]
-
-class StateEntry {
-  late int id;
-  dynamic value;
-  StateEntry({required this.id, this.value});
-}
-class StateMnmgt {
-  List<StateEntry> state = []; 
-  getState(id) {
-    return state.where((s) => s.id == id).first.value;
-  }
-  setState(int id, value) {
-    for (var item in state) {
-        if (item.id == id) { item.value = value; return; }  
-    }
-    state.add(StateEntry(id:id, value:value));
-  } 
-}
-
-StateMnmgt statemanagement = StateMnmgt(); 
-// [[global]]
-
-void main() { 
-    runApp(const MyApp());
-}
-
+//#pragma: declaration
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -75,3 +48,6 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
+
+//#pragma: execution
+runApp(const MyApp());

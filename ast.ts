@@ -4,6 +4,7 @@ let globaltranslation:Translation|undefined = undefined;
 
 export interface IRenderable {
     children:IRenderable[];
+    render(template:String, setupmarker:String, localmarker:String) : Promise<String>; 
     renderDeclaration() : Promise<String>; 
     renderGlobalScope() : Promise<String>; 
     renderLocalScope() : Promise<String>; 
@@ -41,6 +42,28 @@ export class Renderable implements IRenderable {
        }  
      }
      return result;
+    }
+    async render(template:String, setupmarker:String, localmarker:String): Promise<String> {
+       
+        let me:any = this;
+        let lsp = `{ /* [[${me.id}:local]] */ }`
+        let sup = `{ /* [[${me.id}:setup]] */ }`
+
+       // template = template.replaceAll(ls, lsp).replaceAll(su, sup)
+
+        let localcode = await this.renderLocalScope()
+        let setupcode = await this.renderSetupScope(); 
+
+        template = template.replaceAll(`${localmarker}`, `${localmarker} \n ${localcode}`)
+        template = template.replaceAll(`${setupmarker}`, `${setupmarker} \n ${setupcode}`)
+
+        
+        if (me.children) {
+            for (let c of me.children) {
+                template = await c.render(template, sup, lsp) 
+            }
+        }
+        return template.replaceAll(sup, "").replaceAll(lsp, "")
     }
 
     async renderLocalScope(): Promise<String> {
@@ -80,7 +103,7 @@ export class Renderable implements IRenderable {
             statements = this._renderStatements("trigger", triggers, me.action || me.label)
         }        
         template = template.replaceAll(`##TRIGGERS##`, statements)
-        return template
+        return template;
     }
 
     _renderStatements(target:String, placeholders:String[], action:String|undefined) {
@@ -131,84 +154,39 @@ export class RenderWidget {
         if (!ctor) ctor = Renderable;
         console.log("o", target.id);  
         let tree =  ctor ? new ctor(target.id, target) as IRenderable : null
-        if (tree) {
-            // // resolve triggers and sources
-            // for(let c of tree.children) {
-            // let b:any = c;
-            // if (b.trigger != null) {
-            //     let triggers = b.trigger.split(",")
-            //     for (let t of triggers) {
-            //     let e = RenderWidget.findTreeElement(t, tree)
-            //      if (e) {
-
-            //         e.triggers = e.triggers || [];
-            //         e.triggers.push(c)
-            //      }
-            //     }
-            // }
-            
-         // }
-        }
         return tree;
     }
 
 
     static async render(target:any, root:Renderable, translation:Translation):Promise<string>{
-        globaltranslation = translation;
-        let template = await translation.getTemplate("root")
-        if (!template) return "-- error -- missing template"
-        let ls = '{ /* [[local]] */ }'
-        let gs = '// [[global]]'
-        let su = '{ /* [[setup]] */ }'
-        let imports = '// [[imports]]'
+        return this._render(target, root, translation); 
+    }
 
-        template = root.parseResult(template)
-        
-        // walk the tree and render the global section
-        let i = ""; 
-        let importlines:any[] = [];
-        for (let c of root.children) {
-            let line = await c.renderImportScope() 
-            if (importlines.find(t => line)) continue
-            i += line
-            importlines.push(line)
+    static async _collectImportLines(root:Renderable, lines:String[]) {
+        lines.push(await root.renderImportScope());
+        if (root.children) {
+            for(let c of root.children){
+                await this._collectImportLines(c as Renderable, lines); 
+            }
         }
-        template = template.replaceAll(`${imports}`, `${imports} \n ${i}`)
+    }
 
-        // walk the tree and render the global section
-        let r = ""; 
-        let types:any[] = [];
-        for (let c of root.children) {
-            if (types.find(t => t == c.constructor.name)) continue
-            r += await c.renderDeclaration() 
-            types.push(c.constructor.name)
-
+    static async _collectDeclarationLines(root:Renderable, lines:String[]) {
+        lines.push(await root.renderDeclaration());
+        if (root.children) {
+            for(let c of root.children){
+                await this._collectDeclarationLines(c as Renderable, lines); 
+            }
         }
+    }
 
-        template = template.replaceAll(`${gs}`, `${gs} \n ${r}`)
-
-        // walk the tree and render the global section
-        r = ""; 
-        for (let c of root.children) {
-            r += await c.renderGlobalScope() 
+    static async _collectGlobalLines(root:Renderable, lines:String[]) {
+        lines.push(await root.renderGlobalScope());
+        if (root.children) {
+            for(let c of root.children){
+                await this._collectGlobalLines(c as Renderable, lines); 
+            }
         }
-        template = template.replaceAll(`${gs}`, `${gs} \n ${r}`)
-
-        // walk the tree and render the global section
-        let l = ""; 
-        for (let c of root.children) {
-            l += await c.renderLocalScope() 
-        }
-        template = template.replaceAll(`${ls}`, `${ls} \n ${l}`)
-
-        // walk the tree and render the global section
-        let s = ""; 
-        for (let c of root.children) {
-            s += await c.renderSetupScope() 
-        }
-        template = template.replaceAll(`${su}`, `${su} \n ${s}`)
-    
-        return template.replaceAll(gs, "").replaceAll(ls, "").replaceAll(su, "")
     }
 
     static async _render(target:any, root:Renderable, translation:Translation):Promise<string>{
@@ -218,58 +196,59 @@ export class RenderWidget {
             globaltranslation = translation;
             let template = await translation.getTemplate("root")
             if (!template) return "-- error -- missing template"
-            let ls = '{ /* [[local]] */ }'
             let gs = '// [[global]]'
-            let su = '{ /* [[setup]] */ }'
             let imports = '// [[imports]]'
 
             template = root.parseResult(template)
             
+
             // walk the tree and render the global section
-            let i = ""; 
             let importlines:any[] = [];
-            for (let c of root.children) {
-                let line = await c.renderImportScope() 
-                if (importlines.find(t => line)) continue
-                i += line
-                importlines.push(line)
-            }
-            template = template.replaceAll(`${imports}`, `${imports} \n ${i}`)
+            await this._collectImportLines(root, importlines); 
+            template = template.replaceAll(`${imports}`, `${imports} \n ${importlines.join('\n')}`)
 
+            let globallines:any[] = [];
+            await this._collectGlobalLines(root, globallines); 
+            template = template.replaceAll(`${gs}`, `${gs} \n ${globallines.join('\n')}`)
+
+            let declarationlines:any[] = [];
+            await this._collectDeclarationLines(root, declarationlines); 
+            template = template.replaceAll(`${gs}`, `${gs} \n ${declarationlines.join('\n')}`)
+
+            
+            let lsp = `{ /* [[${root.id}:local]] */ }`
+            let sup = `{ /* [[${root.id}:setup]] */ }`
+            
+            // template = template.replaceAll(ls, lsp).replaceAll(su, sup)
+            
+            let localcode = await root.renderLocalScope()
+            let setupcode = await root.renderSetupScope(); 
+            
+            template = template.replaceAll(`${lsp}`, `${lsp} \n ${localcode}`)
+            template = template.replaceAll(`${sup}`, `${sup} \n ${setupcode}`)
+            
+            
+            console.log("template before walk", template)
             // walk the tree and render the global section
-            let r = ""; 
-            let types:any[] = [];
-            for (let c of root.children) {
-                if (types.find(t => t == c.constructor.name)) continue
-                r += await c.renderDeclaration() 
-                types.push(c.constructor.name)
-    
-            }
+            for (let c of root.children)
+              template = await c.render(template, sup, lsp);
 
-            template = template.replaceAll(`${gs}`, `${gs} \n ${r}`)
+            console.log("template after walk", template)
 
-            // walk the tree and render the global section
-            r = ""; 
-            for (let c of root.children) {
-                r += await c.renderGlobalScope() 
-            }
-            template = template.replaceAll(`${gs}`, `${gs} \n ${r}`)
+            // let l = ""; 
+            // for (let c of root.children) {
+            //     l += await c.renderLocalScope() 
+            // }
+            // template = template.replaceAll(`${ls}`, `${ls} \n ${l}`)
 
-            // walk the tree and render the global section
-            let l = ""; 
-            for (let c of root.children) {
-                l += await c.renderLocalScope() 
-            }
-            template = template.replaceAll(`${ls}`, `${ls} \n ${l}`)
-
-            // walk the tree and render the global section
-            let s = ""; 
-            for (let c of root.children) {
-                s += await c.renderSetupScope() 
-            }
-            template = template.replaceAll(`${su}`, `${su} \n ${s}`)
-        
-            return template.replaceAll(gs, "").replaceAll(ls, "").replaceAll(su, "")
+            // // walk the tree and render the global section
+            // let s = ""; 
+            // for (let c of root.children) {
+            //     s += await c.renderSetupScope() 
+            // }
+            // template = template.replaceAll(`${su}`, `${su} \n ${s}`)
+          console.log("template", template); 
+            return template.replaceAll(gs, "").replaceAll(imports, "").template.replaceAll(sup, "").replaceAll(lsp, "")
        // });
     }
 }

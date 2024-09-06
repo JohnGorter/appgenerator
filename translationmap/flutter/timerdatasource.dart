@@ -2,7 +2,7 @@
 import 'dart:async';
 
 //#pragma: declaration
-class DataSource extends ChangeNotifier {
+class TimerDataSource extends ChangeNotifier {
   int _value = 0;
   DataSource() {
     Timer.periodic(Duration(seconds: 1), (t){
@@ -29,7 +29,7 @@ class DataSource extends ChangeNotifier {
 }
              
 //#pragma: global
-DataSource datasource[[id]] = DataSource();
+TimerDataSource datasource[[id]] = TimerDataSource();
 
 //#pragma: setup
 datasource[[id]].addListener((){

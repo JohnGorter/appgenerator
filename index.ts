@@ -12,5 +12,6 @@ const translation = new Translation(t.translationmap);
 
 //new Generator().generate("./build/flutter/lib/main.dart", app); 
 if (!t) console.log("Error: - no target specified -")
-else new Generator().generate(t, app, translation); 
+else 
+    new Generator().generate(t, app, translation); 
 

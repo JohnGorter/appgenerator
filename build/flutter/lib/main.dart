@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
-// [[imports]] 
  
+ 
+
+
+import 'dart:async';
+
+
+
+
 
 class StateEntry {
   late int id;
@@ -22,8 +29,48 @@ class StateMnmgt {
 
 StateMnmgt statemanagement = StateMnmgt(); 
  
-  
  
+
+
+class TimerDataSource extends ChangeNotifier {
+  int _value = 0;
+  TimerDataSource() {
+    Timer.periodic(Duration(seconds: 1), (t){
+      print("tick");
+        this.value = this._value + 1;
+
+  });
+  }
+  set value(v) {
+      _value = v;
+      notifyListeners();
+      
+  }
+
+  reset(argument) {
+    this.value = 0;
+    notifyListeners(); 
+  }
+  
+  refresh(argument) {
+    notifyListeners(); 
+  }
+
+  setValue(v) { _value = v; notifyListeners(); }
+  getValue() { return _value; }
+}
+             
+
+
+ 
+ 
+
+
+TimerDataSource datasource1 = TimerDataSource();
+
+
+
+
 
 void main() { 
     runApp(const MyApp());
@@ -56,7 +103,12 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
    @override
   void initState() {
-     
+    print("init");
+    { /* [[99:setup]] */ } 
+  datasource1.addListener((){
+    print("change");
+  setState(() {});
+});
   
     super.initState();
   }
@@ -72,7 +124,16 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-             
+ 
+Row(
+          children: <Widget>[
+ ElevatedButton( onPressed: () { dynamic event; datasource1.reset(event);
+ } , child: const Text("reset")), 
+ GestureDetector(onTap:(){ dynamic event; }, child:Text("${datasource1.getValue()
+}", style: Theme.of(context).textTheme.headlineMedium)), 
+ 
+          ],
+    ), 
  
           ],
         ),
