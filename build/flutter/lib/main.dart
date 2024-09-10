@@ -36,9 +36,7 @@ class TimerDataSource extends ChangeNotifier {
   int _value = 0;
   TimerDataSource() {
     Timer.periodic(Duration(seconds: 1), (t){
-      print("tick");
         this.value = this._value + 1;
-
   });
   }
   set value(v) {
@@ -103,12 +101,8 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
    @override
   void initState() {
-    print("init");
-    { /* [[99:setup]] */ } 
-  datasource1.addListener((){
-    print("change");
-  setState(() {});
-});
+     
+  
   
     super.initState();
   }
@@ -124,9 +118,11 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
+             
  
 Row(
           children: <Widget>[
+             
  ElevatedButton( onPressed: () { dynamic event; datasource1.reset(event);
  } , child: const Text("reset")), 
  GestureDetector(onTap:(){ dynamic event; }, child:Text("${datasource1.getValue()

@@ -4,7 +4,7 @@ let globaltranslation:Translation|undefined = undefined;
 
 export interface IRenderable {
     children:IRenderable[];
-    render(template:String, setupmarker:String, localmarker:String) : Promise<String>; 
+    render(level:string, template:String, setupmarker:String, localmarker:String) : Promise<String>; 
     renderDeclaration() : Promise<String>; 
     renderGlobalScope() : Promise<String>; 
     renderLocalScope() : Promise<String>; 
@@ -14,6 +14,8 @@ export interface IRenderable {
 
 export class Renderable implements IRenderable {
     id:any
+    level:string = ''
+
     children:IRenderable[] = []
     constructor(id:any, state:any){
         this.id = id;
@@ -43,27 +45,42 @@ export class Renderable implements IRenderable {
      }
      return result;
     }
-    async render(template:String, setupmarker:String, localmarker:String): Promise<String> {
+    async render(level:string, template:string, setupmarker:string, localmarker:string): Promise<String> {
        
         let me:any = this;
-        let lsp = `{ /* [[${me.id}:local]] */ }`
-        let sup = `{ /* [[${me.id}:setup]] */ }`
+        let lsp = localmarker
+        let sup = setupmarker
+
+        this.level = level + ".";
 
        // template = template.replaceAll(ls, lsp).replaceAll(su, sup)
 
         let localcode = await this.renderLocalScope()
         let setupcode = await this.renderSetupScope(); 
 
-        template = template.replaceAll(`${localmarker}`, `${localmarker} \n ${localcode}`)
-        template = template.replaceAll(`${setupmarker}`, `${setupmarker} \n ${setupcode}`)
+        // find the nearest marker and paste the code 
+        for (let i = level.length; i > 0; i--) {
+             let placeholder = `{ /* [[${'.'.repeat(i)}local]] */ }`
+             if (template.indexOf(placeholder) > -1) {
+                template = template.replaceAll(`${placeholder}`, `${placeholder} \n ${localcode}`)
+                break
+             }
+        }
 
+        for (let i = level.length; i > 0; i--) {
+            let placeholder = `{ /* [[${'.'.repeat(i)}local]] */ }`
+            if (template.indexOf(placeholder) > -1) {
+               template = template.replaceAll(`${setupmarker}`, `${setupmarker} \n ${setupcode}`)
+               break
+            }
+       }
         
         if (me.children) {
             for (let c of me.children) {
-                template = await c.render(template, sup, lsp) 
+                template = await c.render(this.level, template, sup, lsp) 
             }
         }
-        return template.replaceAll(sup, "").replaceAll(lsp, "")
+        return template;//.replaceAll(sup, "").replaceAll(lsp, "")
     }
 
     async renderLocalScope(): Promise<String> {
@@ -86,9 +103,19 @@ export class Renderable implements IRenderable {
      }
 
     async _renderScope(scope:String){
+
+       
+
         let result =  await globaltranslation!.getTemplate(this.constructor.name.toLowerCase(),scope);
         if (!result) return ""
         let template = this.parseResult(result);
+
+        let lsp = `{ /* [[local]] */ }`
+        let sup = `{ /* [[setup]] */ }`
+        let ulsp = `{ /* [[${this.level}local]] */ }`
+        let usup = `{ /* [[${this.level}setup]] */ }`
+        template = template.replaceAll(lsp, ulsp).replaceAll(sup, usup);
+
         let me:any = this;
         let statements = "";
         if (me.source) {
@@ -195,6 +222,16 @@ export class RenderWidget {
            // let template = translationmap.get("root")?.template
             globaltranslation = translation;
             let template = await translation.getTemplate("root")
+
+            // mark the local and setup scopes, make them unique for this scope
+            let lsp = `{ /* [[local]] */ }`
+            let sup = `{ /* [[setup]] */ }`
+
+            let level = "."
+            let ulsp = `{ /* [[${level}local]] */ }`
+            let usup = `{ /* [[${level}setup]] */ }`
+            template = template.replaceAll(lsp, ulsp).replaceAll(sup, usup);
+
             if (!template) return "-- error -- missing template"
             let gs = '// [[global]]'
             let imports = '// [[imports]]'
@@ -216,22 +253,19 @@ export class RenderWidget {
             template = template.replaceAll(`${gs}`, `${gs} \n ${declarationlines.join('\n')}`)
 
             
-            let lsp = `{ /* [[${root.id}:local]] */ }`
-            let sup = `{ /* [[${root.id}:setup]] */ }`
-            
             // template = template.replaceAll(ls, lsp).replaceAll(su, sup)
+            template = await root.render(level, template, sup, lsp);
+            // let localcode = await root.renderLocalScope()
+            // let setupcode = await root.renderSetupScope(); 
             
-            let localcode = await root.renderLocalScope()
-            let setupcode = await root.renderSetupScope(); 
-            
-            template = template.replaceAll(`${lsp}`, `${lsp} \n ${localcode}`)
-            template = template.replaceAll(`${sup}`, `${sup} \n ${setupcode}`)
+            // template = template.replaceAll(`${lsp}`, `${lsp} \n ${localcode}`)
+            // template = template.replaceAll(`${sup}`, `${sup} \n ${setupcode}`)
             
             
             console.log("template before walk", template)
             // walk the tree and render the global section
-            for (let c of root.children)
-              template = await c.render(template, sup, lsp);
+            // for (let c of root.children)
+            //   template = await c.render(level, template, sup, lsp);
 
             console.log("template after walk", template)
 
@@ -248,7 +282,7 @@ export class RenderWidget {
             // }
             // template = template.replaceAll(`${su}`, `${su} \n ${s}`)
           console.log("template", template); 
-            return template.replaceAll(gs, "").replaceAll(imports, "").template.replaceAll(sup, "").replaceAll(lsp, "")
+            return template.replaceAll(gs, "").replaceAll(imports, "").replaceAll(usup, "").replaceAll(ulsp, "")
        // });
     }
 }

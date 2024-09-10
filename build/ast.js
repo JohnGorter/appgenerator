@@ -1,6 +1,7 @@
 let globaltranslation = undefined;
 export class Renderable {
     id;
+    level = '';
     children = [];
     constructor(id, state) {
         this.id = id;
@@ -30,21 +31,35 @@ export class Renderable {
         }
         return result;
     }
-    async render(template, setupmarker, localmarker) {
+    async render(level, template, setupmarker, localmarker) {
         let me = this;
-        let lsp = `{ /* [[${me.id}:local]] */ }`;
-        let sup = `{ /* [[${me.id}:setup]] */ }`;
+        let lsp = localmarker;
+        let sup = setupmarker;
+        this.level = level + ".";
         // template = template.replaceAll(ls, lsp).replaceAll(su, sup)
         let localcode = await this.renderLocalScope();
         let setupcode = await this.renderSetupScope();
-        template = template.replaceAll(`${localmarker}`, `${localmarker} \n ${localcode}`);
-        template = template.replaceAll(`${setupmarker}`, `${setupmarker} \n ${setupcode}`);
-        if (me.children) {
-            for (let c of me.children) {
-                template = await c.render(template, sup, lsp);
+        // find the nearest marker and paste the code 
+        for (let i = level.length; i > 0; i--) {
+            let placeholder = `{ /* [[${'.'.repeat(i)}local]] */ }`;
+            if (template.indexOf(placeholder) > -1) {
+                template = template.replaceAll(`${placeholder}`, `${placeholder} \n ${localcode}`);
+                break;
             }
         }
-        return template.replaceAll(sup, "").replaceAll(lsp, "");
+        for (let i = level.length; i > 0; i--) {
+            let placeholder = `{ /* [[${'.'.repeat(i)}local]] */ }`;
+            if (template.indexOf(placeholder) > -1) {
+                template = template.replaceAll(`${setupmarker}`, `${setupmarker} \n ${setupcode}`);
+                break;
+            }
+        }
+        if (me.children) {
+            for (let c of me.children) {
+                template = await c.render(this.level, template, sup, lsp);
+            }
+        }
+        return template; //.replaceAll(sup, "").replaceAll(lsp, "")
     }
     async renderLocalScope() {
         return await this._renderScope("execution");
@@ -66,6 +81,11 @@ export class Renderable {
         if (!result)
             return "";
         let template = this.parseResult(result);
+        let lsp = `{ /* [[local]] */ }`;
+        let sup = `{ /* [[setup]] */ }`;
+        let ulsp = `{ /* [[${this.level}local]] */ }`;
+        let usup = `{ /* [[${this.level}setup]] */ }`;
+        template = template.replaceAll(lsp, ulsp).replaceAll(sup, usup);
         let me = this;
         let statements = "";
         if (me.source) {
@@ -160,6 +180,13 @@ export class RenderWidget {
         // let template = translationmap.get("root")?.template
         globaltranslation = translation;
         let template = await translation.getTemplate("root");
+        // mark the local and setup scopes, make them unique for this scope
+        let lsp = `{ /* [[local]] */ }`;
+        let sup = `{ /* [[setup]] */ }`;
+        let level = ".";
+        let ulsp = `{ /* [[${level}local]] */ }`;
+        let usup = `{ /* [[${level}setup]] */ }`;
+        template = template.replaceAll(lsp, ulsp).replaceAll(sup, usup);
         if (!template)
             return "-- error -- missing template";
         let gs = '// [[global]]';
@@ -175,17 +202,16 @@ export class RenderWidget {
         let declarationlines = [];
         await this._collectDeclarationLines(root, declarationlines);
         template = template.replaceAll(`${gs}`, `${gs} \n ${declarationlines.join('\n')}`);
-        let lsp = `{ /* [[${root.id}:local]] */ }`;
-        let sup = `{ /* [[${root.id}:setup]] */ }`;
         // template = template.replaceAll(ls, lsp).replaceAll(su, sup)
-        let localcode = await root.renderLocalScope();
-        let setupcode = await root.renderSetupScope();
-        template = template.replaceAll(`${lsp}`, `${lsp} \n ${localcode}`);
-        template = template.replaceAll(`${sup}`, `${sup} \n ${setupcode}`);
+        template = await root.render(level, template, sup, lsp);
+        // let localcode = await root.renderLocalScope()
+        // let setupcode = await root.renderSetupScope(); 
+        // template = template.replaceAll(`${lsp}`, `${lsp} \n ${localcode}`)
+        // template = template.replaceAll(`${sup}`, `${sup} \n ${setupcode}`)
         console.log("template before walk", template);
         // walk the tree and render the global section
-        for (let c of root.children)
-            template = await c.render(template, sup, lsp);
+        // for (let c of root.children)
+        //   template = await c.render(level, template, sup, lsp);
         console.log("template after walk", template);
         // let l = ""; 
         // for (let c of root.children) {
@@ -199,7 +225,7 @@ export class RenderWidget {
         // }
         // template = template.replaceAll(`${su}`, `${su} \n ${s}`)
         console.log("template", template);
-        return template.replaceAll(gs, "").replaceAll(imports, "").template.replaceAll(sup, "").replaceAll(lsp, "");
+        return template.replaceAll(gs, "").replaceAll(imports, "").replaceAll(usup, "").replaceAll(ulsp, "");
         // });
     }
 }

@@ -53,7 +53,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
    @override
   void initState() {
-    { /* [[[[id]]:setup]] */ } 
+    { /* [[setup]] */ } 
     super.initState();
   }
 
@@ -68,7 +68,7 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            { /* [[[[id]]:local]] */ }
+            { /* [[local]] */ }
           ],
         ),
       ), // This trailing comma makes auto-formatting nicer for build methods.
