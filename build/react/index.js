@@ -2,6 +2,15 @@
 
  
  
+
+
+let MyLabel = ({text, click}) => <div onClick={click}>value: {text}</div>
+
+let MYButton = ({click, children}) => <button onClick={click}>{children}</button>
+
+ 
+ 
+
     let datasource1 = new class {
     #listeners
     #value;
@@ -25,6 +34,7 @@
     }
 }(1);
     
+
     let datasource4 = new class {
     #listeners
     #value;
@@ -47,9 +57,12 @@
         })
     }
 }(1);
-     
- let MyLabel = ({text, click}) => <div onClick={click}>value: {text}</div>
-let MYButton = ({click, children}) => <button onClick={click}>{children}</button>
+    
+
+
+
+
+
 
 
 class App extends window.React.Component
@@ -57,12 +70,13 @@ class App extends window.React.Component
     constructor(props){
         super(props); 
         this.state = {}; 
-         
- 
+        
         datasource1.addListener(() => this.setState({}))
         
+
         datasource4.addListener(() => this.setState({}))
-          
+        
+  
     }
 
     render() {
@@ -71,14 +85,18 @@ class App extends window.React.Component
              <h4>red </h4>
               <h1>Jeroen</h1>
               <h2>john</h2>
-                 
- <div><MyLabel text={datasource4.getValue()
-} click={() => {}}> </MyLabel></div><div><MyLabel text={datasource4.getValue()
-} click={() => {datasource4.refresh(event);
-}}> </MyLabel></div><div><MyLabel text={datasource4.getValue()
-} click={() => {}}> </MyLabel></div><div>Button <MYButton click={() => {datasource1.refresh(event);
-}}>increment me</MYButton></div><div>Button <MYButton click={() => {datasource4.refresh(event);
-}}>increment me not</MYButton></div><marquee>generic placeholder txcxcxzcest</marquee><marquee>generic placeholder uhhohoh</marquee><b>hi i am arjan</b> 
+                <div><MyLabel text={datasource4.getValue()
++'' || '[[label]]'} click={() => {}}> </MyLabel></div>
+<div><MyLabel text={datasource4.getValue()
++'' || '[[label]]'} click={() => {datasource4.refresh(event);
+}}> </MyLabel></div>
+<div><MyLabel text={datasource4.getValue()
++'' || '[[label]]'} click={() => {}}> </MyLabel></div>
+<div>Button <MYButton click={() => {datasource1.refresh(event);
+}}>increment me (no effect)</MYButton></div>
+<div>Button <MYButton click={() => {datasource4.ererwr(event);
+}}>increment me</MYButton></div>
+ 
              </div>
           )
         }

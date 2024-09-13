@@ -6,6 +6,10 @@ translationmap.set("root", { template: `
 
 import 'package:flutter/material.dart';
 
+class StringWrapper {
+  StringWrapper({this.value:String = ""})
+}
+
 class StateEntry {
   late int id;
   dynamic value;
@@ -270,7 +274,7 @@ translationmap.set("list_setup", { scope:'local',
     listviewchildren[[id]].add(ListTile(title:Text("john")));`
 })
 translationmap.set("list_execution", { scope:'local', 
-    template: "Expanded(child:ListView(children:##SOURCE##.indexed.map((v) => ListTile(onTap: () { dynamic event = v.$1;##TRIGGERS## },title:Text(v.$2))).toList())),",
+    template: "Expanded(child:ListView(children:##SOURCE##.indexed.map((v) => ListTile(onTap: () { dynamic event = v.$1;##TRIGGERS## },title:Text('${v.$2}'))).toList())),",
 })
 
 translationmap.set("label_execution", { scope:'local', 

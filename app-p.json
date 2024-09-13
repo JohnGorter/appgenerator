@@ -1,0 +1,27 @@
+{
+    "app": {
+        "id":"99",
+        "target": "flutter",
+        "title": "Jeroen",
+        "subtitle": "john",
+        "color": "red",
+        "children": [
+            { "row" : 
+              { 
+                "children": [
+                  { "timerdatasource": { "id": "1" } },
+                  { "label": { "id": "2", "label": "example 1" } },
+
+                  { "row": {
+                    "children":[
+                      { "label": { "id": "2", "source": "1" } },
+                      { "button": { "id": "3", "label": "reset", "triggers": "1" } }
+                    ]
+                  }
+                }
+              ]                
+          }
+        }]
+        
+    }
+}

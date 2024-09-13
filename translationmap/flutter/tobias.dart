@@ -1,0 +1,4 @@
+//#pragma: execution
+Text(
+          "${'[[title]]'}"
+    ),

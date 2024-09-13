@@ -1,0 +1,27 @@
+{
+    "app":{
+        "target":"flutter",
+        "title":"Jeroen",
+        "subtitle":"john",
+        "color":"red",
+        "children": [
+            { "column": {
+                "children": [
+                    {"label" : { "id":"2", "label":"test"}},
+                    {"label" : { "id":"3", "label":"test"}},
+                    {"row": {
+                        "children": [                   
+                            {"label" : { "id":"4", "label":"test"}},
+                            {"label" : { "id":"5", "label":"test"}},
+                            {"label" : { "id":"6", "label":"test"}},
+                            {"label" : { "id":"7", "label":"test"}}
+                        ]
+                    }
+                    }
+                ]
+            }
+        }
+        ]
+    }
+}
+

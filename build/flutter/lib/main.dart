@@ -3,11 +3,19 @@ import 'package:flutter/material.dart';
  
 
 
-import 'dart:async';
 
 
 
 
+
+
+
+class StringWrapper {
+  late dynamic value;
+  StringWrapper([dynamic? value]) {
+    this.value = value ?? "";
+  }
+}
 
 class StateEntry {
   late int id;
@@ -31,40 +39,42 @@ StateMnmgt statemanagement = StateMnmgt();
  
  
 
+            class NumberDataSource extends ChangeNotifier {
+             int _value =  0;
+             int get value => _value;
+             set value(v) {
+                 _value = v;
+                 notifyListeners();
+                
+             }
+     
+             _refresh(e) {
+               _value = _value + 1;
+             }
+     
+             refresh(e) {
+               _refresh(e); 
+               notifyListeners(); 
+             }
+     
+             int getValue() => _value; 
+             setValue(v) { _value = v; notifyListeners(); }
+     
+             }
+         
 
-class TimerDataSource extends ChangeNotifier {
-  int _value = 0;
-  TimerDataSource() {
-    Timer.periodic(Duration(seconds: 1), (t){
-        this.value = this._value + 1;
-  });
-  }
-  set value(v) {
-      _value = v;
-      notifyListeners();
-      
-  }
 
-  reset(argument) {
-    this.value = 0;
-    notifyListeners(); 
-  }
-  
-  refresh(argument) {
-    notifyListeners(); 
-  }
 
-  setValue(v) { _value = v; notifyListeners(); }
-  getValue() { return _value; }
-}
-             
 
 
  
  
 
+   NumberDataSource datasource1 = NumberDataSource();
 
-TimerDataSource datasource1 = TimerDataSource();
+   NumberDataSource datasource4 = NumberDataSource();
+
+
 
 
 
@@ -101,9 +111,17 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
    @override
   void initState() {
-     
+    
+        datasource1.addListener((){
+          setState(() {});
+        });
   
+
+        datasource4.addListener((){
+          setState(() {});
+        });
   
+ 
     super.initState();
   }
 
@@ -118,19 +136,22 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-             
- 
-Row(
-          children: <Widget>[
-             
- ElevatedButton( onPressed: () { dynamic event; datasource1.reset(event);
- } , child: const Text("reset")), 
- GestureDetector(onTap:(){ dynamic event; }, child:Text("${datasource1.getValue()
-}", style: Theme.of(context).textTheme.headlineMedium)), 
- 
-          ],
-    ), 
- 
+            GestureDetector(onTap:(){ dynamic event; }, child:Text("${datasource4.getValue()
+}", style: Theme.of(context).textTheme.headlineMedium)),
+GestureDetector(onTap:(){ dynamic event;datasource4.refresh(event);
+ }, child:Text("${datasource4.getValue()
+}", style: Theme.of(context).textTheme.headlineMedium)),
+GestureDetector(onTap:(){ dynamic event; }, child:Text("${datasource4.getValue()
+}", style: Theme.of(context).textTheme.headlineMedium)),
+ElevatedButton( onPressed: () { dynamic event; datasource1.refresh(event);
+ } , child: const Text("increment me (no effect)")),
+ElevatedButton( onPressed: () { dynamic event; datasource4.refresh(event);
+ } , child: const Text("increment me")),
+
+Text(
+          "${'test'}"
+    ),
+
           ],
         ),
       ), // This trailing comma makes auto-formatting nicer for build methods.

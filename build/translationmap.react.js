@@ -78,6 +78,7 @@ translationmap.set("datasource_global", { scope: 'global', template: `
                 this.#filtered = initialvalue;
             }
         
+            add(v){ this.#value.push(v);this.notifyListeners();}
             refresh(v){ this.#value.push(v);this.notifyListeners();}
             setValue(v){ this.#value = v; this.notifyListeners(); }
             getValue() { return this.#filtered }
@@ -129,7 +130,7 @@ translationmap.set("button_declaration", { scope: 'global',
 ` });
 translationmap.set("list_execution", { scope: 'local',
     template: `
-        <div>{datasource[[source]].getValue().map(element => <div onClick={() => {let event = element;  ##TRIGGERS##}} key={element}> { element } </div>)}</div>
+        <div>{datasource[[source]].getValue().map(element => <div onClick={() => {let event = element;  ##TRIGGERS##}} key={JSON.stringify(element)}> { JSON.stringify(element) } </div>)}</div>
     `
 });
 translationmap.set("detail_execution", { scope: 'global',
@@ -154,7 +155,7 @@ translationmap.set("label_declaration", { scope: 'global',
     template: `let MyLabel = ({text, click}) => <div onClick={click}>value: {text}</div>
 ` });
 translationmap.set("label_execution", { scope: 'local',
-    template: "<div><MyLabel text={##SOURCE##} click={() => {##TRIGGERS##}}> </MyLabel></div>"
+    template: "<div><MyLabel text={##SOURCE##+'' || '[[label]]'} click={() => {##TRIGGERS##}}> </MyLabel></div>"
 });
 translationmap.set("header_execution", { scope: 'local',
     template: "<marquee>generic placeholder [[label]]</marquee>"

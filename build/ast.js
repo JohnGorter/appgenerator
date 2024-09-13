@@ -40,18 +40,22 @@ export class Renderable {
         let localcode = await this.renderLocalScope();
         let setupcode = await this.renderSetupScope();
         // find the nearest marker and paste the code 
-        for (let i = level.length; i > 0; i--) {
-            let placeholder = `{ /* [[${'.'.repeat(i)}local]] */ }`;
-            if (template.indexOf(placeholder) > -1) {
-                template = template.replaceAll(`${placeholder}`, `${placeholder} \n ${localcode}`);
-                break;
+        if (localcode.length > 0) {
+            for (let i = level.length; i > 0; i--) {
+                let placeholder = `{ /* [[${'.'.repeat(i)}local]] */ }`;
+                if (template.indexOf(placeholder) > -1) {
+                    template = template.replaceAll(`${placeholder}`, `${localcode}\n${placeholder}`);
+                    break;
+                }
             }
         }
-        for (let i = level.length; i > 0; i--) {
-            let placeholder = `{ /* [[${'.'.repeat(i)}local]] */ }`;
-            if (template.indexOf(placeholder) > -1) {
-                template = template.replaceAll(`${setupmarker}`, `${setupmarker} \n ${setupcode}`);
-                break;
+        if (setupcode.length > 0) {
+            for (let i = level.length; i > 0; i--) {
+                let placeholder = `{ /* [[${'.'.repeat(i)}setup]] */ }`;
+                if (template.indexOf(placeholder) > -1) {
+                    template = template.replaceAll(`${placeholder}`, `${setupcode}\n${placeholder}`);
+                    break;
+                }
             }
         }
         if (me.children) {
@@ -91,6 +95,8 @@ export class Renderable {
         if (me.source) {
             statements = this._renderStatements("source", [me.source], undefined);
         }
+        if (statements == "")
+            statements = `'${me.label}'`;
         template = template.replaceAll(`##SOURCE##`, statements);
         statements = "";
         if (me.triggers) {
@@ -159,7 +165,9 @@ export class RenderWidget {
         }
     }
     static async _collectDeclarationLines(root, lines) {
-        lines.push(await root.renderDeclaration());
+        let line = await root.renderDeclaration();
+        if (!lines.find(l => l == line))
+            lines.push(line);
         if (root.children) {
             for (let c of root.children) {
                 await this._collectDeclarationLines(c, lines);
@@ -212,6 +220,15 @@ export class RenderWidget {
         // walk the tree and render the global section
         // for (let c of root.children)
         //   template = await c.render(level, template, sup, lsp);
+        // remove the markers
+        for (let marker of ['setup', 'local', 'global', 'imports']) {
+            for (let i = 10; i > 0; i--) {
+                let placeholder = `{ /* [[${'.'.repeat(i)}${marker}]] */ }`;
+                if (template.indexOf(placeholder) > -1) {
+                    template = template.replaceAll(`${placeholder}`, ``);
+                }
+            }
+        }
         console.log("template after walk", template);
         // let l = ""; 
         // for (let c of root.children) {

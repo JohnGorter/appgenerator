@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
 // [[imports]]
 
+class StringWrapper {
+  late dynamic value;
+  StringWrapper([dynamic? value]) {
+    this.value = value ?? "";
+  }
+}
+
 class StateEntry {
   late int id;
   dynamic value;
