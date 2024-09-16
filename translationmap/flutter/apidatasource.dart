@@ -13,9 +13,6 @@ class ApiDatasource extends ChangeNotifier {
       notifyListeners();
       
   }
-
-  
-  
   Future<List<dynamic>> load() async {
     () async { response = json.decode(await http.read(Uri.parse(url))); notifyListeners(); }();
     return response;
@@ -30,7 +27,6 @@ ApiDatasource datasource[[id]] = ApiDatasource(url:'[[url]]');
 
 //#pragma: setup
 datasource[[id]].addListener((){
-  print("new");
   setState(() {});
 });
 datasource[[id]].load(); 

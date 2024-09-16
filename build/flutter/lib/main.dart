@@ -2,13 +2,8 @@ import 'package:flutter/material.dart';
  
  
 
-
-
-
-
-
-
-
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class StringWrapper {
   late dynamic value;
@@ -37,45 +32,34 @@ class StateMnmgt {
 
 StateMnmgt statemanagement = StateMnmgt(); 
  
+
+class ApiDatasource extends ChangeNotifier {
+  String url = "";
+  List<dynamic>  response = [];
+  ApiDatasource({this.url = ""}) ;
+
+  set ur(v) {
+      url = v;
+      notifyListeners();
+      
+  }
+
+  
+  Future<List<dynamic>> load() async {
+    () async { response = json.decode(await http.read(Uri.parse(url))); notifyListeners(); }();
+    return response;
+  }
+
+  setValue(u)  { url = u; () async { response = json.decode(await http.read(Uri.parse(url))); notifyListeners(); }();}
+  List<dynamic>  getValue()  { return response; }
+}
+             
+
+
+    List<ListTile> listviewchildren3= []; 
  
 
-            class NumberDataSource extends ChangeNotifier {
-             int _value =  0;
-             int get value => _value;
-             set value(v) {
-                 _value = v;
-                 notifyListeners();
-                
-             }
-     
-             _refresh(e) {
-               _value = _value + 1;
-             }
-     
-             refresh(e) {
-               _refresh(e); 
-               notifyListeners(); 
-             }
-     
-             int getValue() => _value; 
-             setValue(v) { _value = v; notifyListeners(); }
-     
-             }
-         
-
-
-
-
-
- 
- 
-
-   NumberDataSource datasource1 = NumberDataSource();
-
-   NumberDataSource datasource4 = NumberDataSource();
-
-
-
+ApiDatasource datasource1 = ApiDatasource(url:'http://localhost:1337/cars');
 
 
 
@@ -112,15 +96,13 @@ class _MyHomePageState extends State<MyHomePage> {
    @override
   void initState() {
     
-        datasource1.addListener((){
-          setState(() {});
-        });
-  
+datasource1.addListener((){
+  print("new");
+  setState(() {});
+});
+datasource1.load(); 
 
-        datasource4.addListener((){
-          setState(() {});
-        });
-  
+    listviewchildren3.add(ListTile(title:Text("john")));
  
     super.initState();
   }
@@ -136,21 +118,8 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            GestureDetector(onTap:(){ dynamic event; }, child:Text("${datasource4.getValue()
-}", style: Theme.of(context).textTheme.headlineMedium)),
-GestureDetector(onTap:(){ dynamic event;datasource4.refresh(event);
- }, child:Text("${datasource4.getValue()
-}", style: Theme.of(context).textTheme.headlineMedium)),
-GestureDetector(onTap:(){ dynamic event; }, child:Text("${datasource4.getValue()
-}", style: Theme.of(context).textTheme.headlineMedium)),
-ElevatedButton( onPressed: () { dynamic event; datasource1.refresh(event);
- } , child: const Text("increment me (no effect)")),
-ElevatedButton( onPressed: () { dynamic event; datasource4.refresh(event);
- } , child: const Text("increment me")),
-
-Text(
-          "${'test'}"
-    ),
+            Expanded(child:ListView(children:datasource1.getValue()
+.indexed.map((v) => ListTile(onTap: () { dynamic event = v.$1; },title:Text('${v.$2}'))).toList())),
 
           ],
         ),

@@ -16,7 +16,7 @@ class App extends window.React.Component
               <div>
              <h4>[[color]] </h4>
               <h1>[[title]]</h1>
-              <h2>[[subtitle]]</h2>
+              <h2>[[siebe]]</h2>
                 { /* [[local]] */ } 
              </div>
           )
@@ -152,7 +152,7 @@ translationmap.set("button_execution", { scope: 'local',
     template: "<div>Button <MYButton click={() => {##TRIGGERS##}}>[[label]]</MYButton></div>"
 });
 translationmap.set("label_declaration", { scope: 'global',
-    template: `let MyLabel = ({text, click}) => <div onClick={click}>value: {text}</div>
+    template: `let MyLabel = ({text, click}) => <div onClick={click}>{text}</div>
 ` });
 translationmap.set("label_execution", { scope: 'local',
     template: "<div><MyLabel text={##SOURCE##+'' || '[[label]]'} click={() => {##TRIGGERS##}}> </MyLabel></div>"

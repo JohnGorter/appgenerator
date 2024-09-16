@@ -107,9 +107,6 @@ export class Renderable implements IRenderable {
      }
 
     async _renderScope(scope:String){
-
-       
-
         let result =  await globaltranslation!.getTemplate(this.constructor.name.toLowerCase(),scope);
         if (!result) return ""
         let template = this.parseResult(result);

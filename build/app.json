@@ -1,18 +1,12 @@
 {
     "app": {
-        "target": "react",
+        "target": "flutter",
         "title": "Jeroen",
         "subtitle": "john",
         "color": "red",
         "children": [
-            { "numberdatasource": { "id": "1" } },
-            { "numberdatasource": { "id": "4" } },
-            { "label": { "id": "2", "source": "4" } },
-            { "label": { "id": "5", "source": "4", "triggers": "4" } },
-            { "label": { "id": "51", "source": "4" } },
-            { "button": { "id": "3", "label": "increment me (no effect)", "action": "refresh", "triggers": "1" } },
-            { "button": { "id": "6", "label": "increment me", "action": "ererwr", "triggers": "4" } },
-            { "tobiaerers": { "title": "tewwwst" } }
+            { "apidatasource": { "id": "1", "url": "http://localhost:1337/cars" } },
+            { "list": { "source": "1", "id": "3" } }
         ]
     }
 }

@@ -1,0 +1,24 @@
+{
+    "app":{
+        "target":"react",
+        "title":"Jeroen",
+        "subtitle":"john",
+        "color":"red",
+        "children": [
+            { "numberdatasource" : { "id":"1" } },
+            { "numberdatasource" : { "id":"4" } },
+            { "label" : { "id":"2", "source":"4" } },
+            { "label" : { "id":"5", "source":"4", "triggers":"4" } },
+            { "label" : { "id":"51", "source":"4" } },
+            { "button" : { "id":"3", "label":"increment me (no effect)", "action":"refresh", "triggers":"1"} },
+            { "button" : { "id":"6", "label":"increment me", "action":"refresh", "triggers":"4" } },
+            { "row" : {
+                "children": [
+                    { "image" : { "height":"160", "width":"150","url":"https://cdn.pighen.com/pub/media/catalog/product/cache/d2dc04619bc19fd050080f6be018f0fb/S/S/SS24_packshot_gorgeous_george_navy_atlas_green_black-24870.jpg"}},
+                    { "text" : { "value":"hahahahahahaa"}}
+                ]
+            }
+        }
+        ]
+    }
+}
