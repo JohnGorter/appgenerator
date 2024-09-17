@@ -251,6 +251,11 @@ translationmap.set("list_declaration", { scope: 'local',
     template: `
     List<ListTile> listviewchildren[[id]]= [];`,
 });
+translationmap.set("list_config", {
+    config: {
+        type: "list"
+    }
+});
 translationmap.set("list_setup", { scope: 'local',
     template: `
     listviewchildren[[id]].add(ListTile(title:Text("john")));`

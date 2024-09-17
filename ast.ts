@@ -107,6 +107,7 @@ export class Renderable implements IRenderable {
      }
 
     async _renderScope(scope:String){
+        let config  =  await globaltranslation!.getConfig(this.constructor.name.toLowerCase());
         let result =  await globaltranslation!.getTemplate(this.constructor.name.toLowerCase(),scope);
         if (!result) return ""
         let template = this.parseResult(result);
@@ -120,7 +121,7 @@ export class Renderable implements IRenderable {
         let me:any = this;
         let statements = "";
         if (me.source) {
-            statements = this._renderStatements("source", [me.source], undefined);
+            statements = this._renderStatements("source", [me.source], config?.type);
         }
         if (statements == "") statements = `'${me.label}'`;
         template = template.replaceAll(`##SOURCE##`, statements)

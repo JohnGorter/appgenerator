@@ -6,7 +6,8 @@
         "color":"red",
         "children": [
             { "apidatasource" : { "id":"1", "url":"http://localhost:1337/cars" } },
-            { "list": { "source":"1", "id":"3"}}
+            { "list": { "source":"1", "id":"3"}},
+            { "label": { "label":"tobias waewrwerews here"}}       
         ]
     }
 }

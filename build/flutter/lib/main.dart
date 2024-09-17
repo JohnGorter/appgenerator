@@ -5,6 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+
+
+
+
 class StringWrapper {
   late dynamic value;
   StringWrapper([dynamic? value]) {
@@ -32,6 +36,7 @@ class StateMnmgt {
 
 StateMnmgt statemanagement = StateMnmgt(); 
  
+ 
 
 class ApiDatasource extends ChangeNotifier {
   String url = "";
@@ -43,8 +48,6 @@ class ApiDatasource extends ChangeNotifier {
       notifyListeners();
       
   }
-
-  
   Future<List<dynamic>> load() async {
     () async { response = json.decode(await http.read(Uri.parse(url))); notifyListeners(); }();
     return response;
@@ -56,10 +59,12 @@ class ApiDatasource extends ChangeNotifier {
              
 
 
-    List<ListTile> listviewchildren3= []; 
+    List<ListTile> listviewchildren3= [];
+ 
  
 
 ApiDatasource datasource1 = ApiDatasource(url:'http://localhost:1337/cars');
+
 
 
 
@@ -97,7 +102,6 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     
 datasource1.addListener((){
-  print("new");
   setState(() {});
 });
 datasource1.load(); 
@@ -118,8 +122,9 @@ datasource1.load();
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Expanded(child:ListView(children:datasource1.getValue()
+            Expanded(child:ListView(children:datasource1.list()
 .indexed.map((v) => ListTile(onTap: () { dynamic event = v.$1; },title:Text('${v.$2}'))).toList())),
+GestureDetector(onTap:(){ dynamic event; }, child:Text("${'tobias waewrwerews here'}", style: Theme.of(context).textTheme.headlineMedium)),
 
           ],
         ),

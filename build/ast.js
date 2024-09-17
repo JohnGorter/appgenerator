@@ -81,6 +81,7 @@ export class Renderable {
         return await this._renderScope("imports");
     }
     async _renderScope(scope) {
+        let config = await globaltranslation.getConfig(this.constructor.name.toLowerCase());
         let result = await globaltranslation.getTemplate(this.constructor.name.toLowerCase(), scope);
         if (!result)
             return "";
@@ -93,7 +94,7 @@ export class Renderable {
         let me = this;
         let statements = "";
         if (me.source) {
-            statements = this._renderStatements("source", [me.source], undefined);
+            statements = this._renderStatements("source", [me.source], config?.type);
         }
         if (statements == "")
             statements = `'${me.label}'`;
