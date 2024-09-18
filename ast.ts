@@ -121,7 +121,7 @@ export class Renderable implements IRenderable {
         let me:any = this;
         let statements = "";
         if (me.source) {
-            statements = this._renderStatements("source", [me.source], config?.type);
+            statements = this._renderStatements("source", [me.source], config?.type == "list" ? "getList" : "getValue");
         }
         if (statements == "") statements = `'${me.label}'`;
         template = template.replaceAll(`##SOURCE##`, statements)

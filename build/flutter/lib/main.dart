@@ -55,6 +55,7 @@ class ApiDatasource extends ChangeNotifier {
 
   setValue(u)  { url = u; () async { response = json.decode(await http.read(Uri.parse(url))); notifyListeners(); }();}
   List<dynamic>  getValue()  { return response; }
+  List<dynamic>  getList()  { return response; }
 }
              
 
@@ -122,9 +123,13 @@ datasource1.load();
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Expanded(child:ListView(children:datasource1.list()
+            Expanded(child:ListView(children:datasource1.getList()
 .indexed.map((v) => ListTile(onTap: () { dynamic event = v.$1; },title:Text('${v.$2}'))).toList())),
-GestureDetector(onTap:(){ dynamic event; }, child:Text("${'tobias waewrwerews here'}", style: Theme.of(context).textTheme.headlineMedium)),
+
+Text(
+          "${'test waewrwerews here'}"
+    ),
+
 
           ],
         ),

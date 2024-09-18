@@ -20,6 +20,7 @@ class ApiDatasource extends ChangeNotifier {
 
   setValue(u)  { url = u; () async { response = json.decode(await http.read(Uri.parse(url))); notifyListeners(); }();}
   List<dynamic>  getValue()  { return response; }
+  List<dynamic>  getList()  { return response; }
 }
              
 //#pragma: global

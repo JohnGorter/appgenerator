@@ -1,17 +1,40 @@
 import { Generator } from './gen.js';
-import { appDec, app } from './global.js';
+import {  app } from './global.js';
 import targets  from './targets.json' with { type:"json"};
 import { Translation } from './transation.js';
 
-let targetsany = targets as any;
-let appany:any = app;
-let t  = targetsany.targets[appany?.app?.target];
+import { readFileSync } from 'fs'
 
-console.log("t", t.translationmap)
-const translation = new Translation(t.translationmap); 
+// let targetsany = targets as any;
+// let appany:any = app;
+// let t  = targetsany.targets[appany?.app?.target];
 
-//new Generator().generate("./build/flutter/lib/main.dart", app); 
-if (!t) console.log("Error: - no target specified -")
-else 
-    new Generator().generate(t, app, translation); 
+// console.log("t", t.translationmap)
+// const translation = new Translation(t.translationmap); 
 
+// //new Generator().generate("./build/flutter/lib/main.dart", app); 
+// if (!t) console.log("Error: - no target specified -")
+// else 
+//     new Generator().generate(t, app, translation); 
+
+
+
+export default class JGen 
+{
+    start(file:String) {
+        let f = readFileSync(file as any, 'utf-8')
+        console.log("starting", f)
+        let app = JSON.parse(f)
+        let targetsany = targets as any;
+        let appany:any = app;
+        let t  = targetsany.targets[appany?.app?.target];
+
+        console.log("t", t.translationmap)
+        const translation = new Translation(t.translationmap); 
+
+        //new Generator().generate("./build/flutter/lib/main.dart", app); 
+        if (!t) console.log("Error: - no target specified -")
+        else 
+            new Generator().generate(t, app, translation); 
+    }
+}

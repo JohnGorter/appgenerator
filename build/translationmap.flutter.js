@@ -282,4 +282,6 @@ translationmap.set("search_execution", { scope: 'global',
 translationmap.set("arjan_execution", { scope: 'local',
     template: `Text("hi i am arjan")`
 });
+translationmap.set('john', { url: 'https://github.com/JohnGorter/appgenerator/blob/master/translationmap/flutter/john.dart' });
+// https://raw.githubusercontent.com/JohnGorter/appgenerator/master/translationmap/flutter/john.dart
 //# sourceMappingURL=translationmap.flutter.js.map

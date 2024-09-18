@@ -1,6 +1,14 @@
 {
     "targets": {
-        "flutter": { "output": "./build/flutter/lib/main.dart", "translationmap": "flutter" },
-        "react": { "output": "./build/react/index.js", "translationmap": "react" }
+        "flutter": {
+            "output": "./build/flutter/lib/main.dart",
+            "runner": "./build/runner/flutter_runner.js",
+            "translationmap": "flutter"
+        },
+        "react": {
+            "output": "./build/react/index.js",
+            "runner": "./build/runner/react_runner.js",
+            "translationmap": "react"
+        }
     }
 }
