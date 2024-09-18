@@ -1,1 +1,4 @@
-Text('[[label]]')
+//#pragma: execution
+Text(
+          "${'[[title]]'}"
+    ),
