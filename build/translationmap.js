@@ -42,9 +42,9 @@ translationmap.set("datasource_global", { scope: 'global', template: `
         this.#listeners.push(l)
     }
     notifyListeners(){
-        console.log("number of listeners:", this.#listeners.length)
+        // console.log("number of listeners:", this.#listeners.length)
         this.#listeners.forEach(l => {
-            console.log("l", l); 
+            // console.log("l", l); 
             l(this.#value);
         })
     }

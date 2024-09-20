@@ -1,6 +1,6 @@
 //#pragma: execution
 Row(
-          children: <Widget>[
+          children : <Widget>[
             { /* [[local]] */ }
           ],
     ),

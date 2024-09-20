@@ -5,9 +5,22 @@
         "subtitle":"john",
         "color":"red",
         "children": [
-            { "apidatasource" : { "id":"1", "url":"http://localhost:1337/cars" } },
-            { "list": { "source":"1", "id":"3"}},
-            { "john": { "title":"test waewrwerews here"}}       
+            { "column": {
+                "children": [
+                    {"label" : { "id":"2", "label":"tddddest"}},
+                    {"label" : { "id":"3", "label":"test"}},
+                    {"row": {
+                        "children": [                   
+                            {"label" : { "id":"4", "label":"test"}},
+                            {"label" : { "id":"5", "label":"test"}},
+                            {"label" : { "id":"6", "label":"test"}},
+                            {"label" : { "id":"7", "label":"test"}}
+                        ]
+                    }
+                    }
+                ]
+            }
+        }
         ]
     }
 }

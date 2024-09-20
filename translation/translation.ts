@@ -34,9 +34,9 @@ export class Translation {
 
     async getTemplate(classname:String, scope?:String|undefined) {
         let extension = this.#target == "flutter" ? "dart" : "js";
-        if (fs.existsSync(`./translationmap/${this.#target}/${classname}.${extension}`)) {
+        if (fs.existsSync(`./translation/${this.#target}/${classname}.${extension}`)) {
             // read template from template file
-            let data = fs.readFileSync(`./translationmap/${this.#target}/${classname}.${extension}`, 'utf8');
+            let data = fs.readFileSync(`./translation/${this.#target}/${classname}.${extension}`, 'utf8');
             if (scope) {
                 return this.returnDataForScope(data, scope); 
             } else {

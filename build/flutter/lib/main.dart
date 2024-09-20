@@ -2,16 +2,14 @@ import 'package:flutter/material.dart';
  
  
 
-import 'package:http/http.dart' as http;
+
+
 import 'dart:convert';
-
-
-
-
+import 'dart:convert';
 
 class StringWrapper {
   late dynamic value;
-  StringWrapper([dynamic? value]) {
+  StringWrapper([dynamic value]) {
     this.value = value ?? "";
   }
 }
@@ -38,33 +36,70 @@ StateMnmgt statemanagement = StateMnmgt();
  
  
 
-class ApiDatasource extends ChangeNotifier {
-  String url = "";
-  List<dynamic>  response = [];
-  ApiDatasource({this.url = ""}) ;
 
-  set ur(v) {
-      url = v;
+class ListItem {
+  String title;
+  String subtitle;
+  ListItem({this.title = "", this.subtitle = ""});
+  ListItem.fromJson(Map<String, dynamic> json) :
+    title = json['title'],
+    subtitle = json['subtitle'];
+  
+  Map<String, dynamic> toJson() {
+    return {
+      'title':title,
+      'subtitle':subtitle
+    };
+  }
+}
+
+class DataSource extends ChangeNotifier {
+  List<ListItem> _list = [];
+  ListItem? _value;
+  List<ListItem> filteredvalue = [];
+  ListItem? get value => _value;
+  ListItem? get selected => _value;
+  ListItem? _selected ;
+
+  set value(v) {
+      _value = v;
       notifyListeners();
       
   }
-  Future<List<dynamic>> load() async {
-    () async { response = json.decode(await http.read(Uri.parse(url))); notifyListeners(); }();
-    return response;
+
+  add(argument) {
+    _list.add(argument);
+    notifyListeners(); 
+  }
+  select(f) { this._selected = f;  notifyListeners();}
+  search(f){
+    if (f == "") filteredvalue = _list;
+    else filteredvalue = _list.where((v) => v.title.indexOf(f) >= 0).toList();
+   // statemanagement.setState([[stateid]], filteredvalue);
+    print('filtered@');
+    notifyListeners();
   }
 
-  setValue(u)  { url = u; () async { response = json.decode(await http.read(Uri.parse(url))); notifyListeners(); }();}
-  List<dynamic>  getValue()  { return response; }
-  List<dynamic>  getList()  { return response; }
+  refresh(argument) {
+    notifyListeners(); 
+  }
+
+  ListItem? getValue() => _selected; 
+  List<ListItem> getList() => filteredvalue; 
+  setValue(v) { _value = v; notifyListeners(); }
+
 }
              
 
 
     List<ListTile> listviewchildren3= [];
+
  
  
 
-ApiDatasource datasource1 = ApiDatasource(url:'http://localhost:1337/cars');
+
+DataSource datasource1 = DataSource();
+
 
 
 
@@ -102,10 +137,12 @@ class _MyHomePageState extends State<MyHomePage> {
    @override
   void initState() {
     
+datasource1._list = List.generate(10, (i) => ListItem(title:"John${i}", subtitle:"Gorter"));
+datasource1.filteredvalue = datasource1._list;
+// statemanagement.setState([[stateid]], datasource1.filteredvalue);
 datasource1.addListener((){
   setState(() {});
 });
-datasource1.load(); 
 
     listviewchildren3.add(ListTile(title:Text("john")));
  
@@ -123,13 +160,16 @@ datasource1.load();
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Expanded(child:ListView(children:datasource1.getList()
-.indexed.map((v) => ListTile(onTap: () { dynamic event = v.$1; },title:Text('${v.$2}'))).toList())),
-
-Text(
-          "${'test waewrwerews here'}"
-    ),
-
+            TextField(  obscureText: false,  decoration:  InputDecoration( border: OutlineInputBorder()) ,onChanged: (value) => statemanagement.setState(15, value),),TextButton(child:Text("search"), onPressed:() { dynamic event = statemanagement.getState(15); datasource1.search(event);
+;}),
+Expanded(child:ListView(children:datasource1.getList()
+.indexed.map((v) => ListTile(onTap: () { dynamic event = v.$2;datasource1.select(event);
+ },title:Text('${v.$2.title}'))).toList())),
+Text("${jsonEncode(datasource1.getValue()
+)}"),
+TextField(  obscureText: false,  decoration:  InputDecoration( border: OutlineInputBorder(), labelText: "Name", hintText: "${jsonEncode(datasource1.getValue()
+)}") ,onChanged: (value) => statemanagement.setState(5, value),),TextButton(child:Text("save"), onPressed:() { dynamic event = ListItem(title:statemanagement.getState(5), subtitle:statemanagement.getState(5)); datasource1.add(event);
+;}),
 
           ],
         ),

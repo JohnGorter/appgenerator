@@ -9,7 +9,7 @@ class TimerDataSource {
       this.#value = initialvalue;
       globalThis.setInterval(()=>{
         this.#value = this.#value + 1; 
-        console.log("adding 1 to value", this.#value);
+        // console.log("adding 1 to value", this.#value);
         this.notifyListeners(); 
       }, 1000); 
   }
@@ -26,7 +26,7 @@ class TimerDataSource {
   }
 
   notifyListeners(){
-      console.log("number of listeners:", this.#listeners.length)
+      // console.log("number of listeners:", this.#listeners.length)
       this.#listeners.forEach(l => {
           l(this.#value);
       })

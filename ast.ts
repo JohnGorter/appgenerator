@@ -1,4 +1,4 @@
-import { Translation } from './transation.js'
+import { Translation } from './translation/translation.js';
 
 let globaltranslation:Translation|undefined = undefined;
 
@@ -39,7 +39,7 @@ export class Renderable implements IRenderable {
     if (result) {
         let me:any = this;
        for (let k of Object.keys(me)) {
-         console.log("replacing", k, me[k])
+         // console.log("replacing", k, me[k])
          result = result.replaceAll(`[[${k}]]`, me[k])
        }  
      }
@@ -129,8 +129,8 @@ export class Renderable implements IRenderable {
         statements = "";
         if (me.triggers) {
             let triggers = me.triggers.split(",")
-            console.log("triggers:", triggers);
-            statements = this._renderStatements("trigger", triggers, me.action || me.label)
+            // console.log("triggers:", triggers);
+            statements = this._renderStatements("trigger", triggers, me.action || config?.defaultAction || "refresh")
         }        
         template = template.replaceAll(`##TRIGGERS##`, statements)
         return template;
@@ -141,12 +141,12 @@ export class Renderable implements IRenderable {
         if (target == "trigger")
            // let params = null;
             for (let t of placeholders) {
-                statements += `datasource${t}.${action || 'refresh'}(event);\n`
+                statements += `datasource${t}.${action}(event);\n`
             }
 
         if (target == "source")
             for (let t of placeholders) {
-                statements += `datasource${t}.${action || 'getValue'}()\n`
+                statements += `datasource${t}.${action}()\n`
             }
         statements = statements + ""
         return statements;
@@ -182,7 +182,7 @@ export class RenderWidget {
         let target = Object.values(o)[0];
         let ctor = RenderWidget.generateClass(classname); 
         if (!ctor) ctor = Renderable;
-        console.log("o", target.id);  
+        // console.log("o", target.id);  
         let tree =  ctor ? new ctor(target.id, target) as IRenderable : null
         return tree;
     }
@@ -266,7 +266,7 @@ export class RenderWidget {
             // template = template.replaceAll(`${sup}`, `${sup} \n ${setupcode}`)
             
             
-            console.log("template before walk", template)
+            // console.log("template before walk", template)
             // walk the tree and render the global section
             // for (let c of root.children)
             //   template = await c.render(level, template, sup, lsp);
@@ -280,7 +280,7 @@ export class RenderWidget {
                 }
             }
 
-            console.log("template after walk", template)
+            // console.log("template after walk", template)
 
             // let l = ""; 
             // for (let c of root.children) {
@@ -294,7 +294,7 @@ export class RenderWidget {
             //     s += await c.renderSetupScope() 
             // }
             // template = template.replaceAll(`${su}`, `${su} \n ${s}`)
-          console.log("template", template); 
+          // console.log("template", template); 
             return template.replaceAll(gs, "").replaceAll(imports, "").replaceAll(usup, "").replaceAll(ulsp, "")
        // });
     }

@@ -1,0 +1,19 @@
+
+        
+        
+        
+        {
+            "app":{
+                "target":"flutter-mac",
+                "title":"Jerssosen",
+                "subtitle":"ees",
+                "color":"red",
+                "children": [
+                    { "search": { "id":"15", "triggers":"1"}},
+                    { "datasource" : { "id":"1" } },
+                    { "list": { "source":"1", "id":"3", "triggers":"1"}},
+                    { "detail": { "source":"1", "id":"4"}},
+                    { "input": { "source":"1", "id":"5", "triggers":"1"}}
+                ]
+            }
+        }

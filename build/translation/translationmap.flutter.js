@@ -1,7 +1,4 @@
-
-export const translationmap:any = new Map<String, Object>(); 
-
-
+export const translationmap = new Map();
 translationmap.set("root", { template: `
 
 import 'package:flutter/material.dart';
@@ -138,21 +135,17 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
-`});
-
-
-translationmap.set("numberdatasource_global", { scope:'global', template: `
+` });
+translationmap.set("numberdatasource_global", { scope: 'global', template: `
    NumberDataSource datasource[[id]] = NumberDataSource();`
-  })
-
-translationmap.set("numberdatasource_setup", { scope:'setup', template: `
+});
+translationmap.set("numberdatasource_setup", { scope: 'setup', template: `
         datasource[[id]].addListener((){
           setState(() {});
         });
   `
-  })
-
-translationmap.set("numberdatasource_declaration", { scope:'global', template: `
+});
+translationmap.set("numberdatasource_declaration", { scope: 'global', template: `
             class NumberDataSource extends ChangeNotifier {
              int _value =  0;
              int get value => _value;
@@ -176,9 +169,8 @@ translationmap.set("numberdatasource_declaration", { scope:'global', template: `
      
              }
          `
-  })
-
-         translationmap.set("detaildatasource_declaration", { scope:'global', template: `
+});
+translationmap.set("detaildatasource_declaration", { scope: 'global', template: `
             class DetailDataSource extends ChangeNotifier {
              String _detail =   "John Gorter";
              String get detail => _detail;
@@ -201,20 +193,16 @@ translationmap.set("numberdatasource_declaration", { scope:'global', template: `
              setValue(d) { _detail = d; notifyListeners(); }
      
              }
-         `})
-     
-     
-     translationmap.set("detaildatasource_global", { scope:'global', template: `
+         ` });
+translationmap.set("detaildatasource_global", { scope: 'global', template: `
          DetailDataSource datasource[[id]] = DetailDataSource();`
-       })
-     
-         translationmap.set("detaildatasource_setup", { scope:'setup', template: `
+});
+translationmap.set("detaildatasource_setup", { scope: 'setup', template: `
              datasource[[id]].addListener((){
                setState(() {});
              });
-             `})
-
-             translationmap.set("datasource_declaration", { scope:'global', template: `
+             ` });
+translationmap.set("datasource_declaration", { scope: 'global', template: `
                 class DataSource extends ChangeNotifier {
                 List<String> _value = [];
                 List<String> filteredvalue = [];
@@ -243,14 +231,11 @@ translationmap.set("numberdatasource_declaration", { scope:'global', template: `
                  setValue(v) { _value = v; notifyListeners(); }
          
                  }
-             `})
-         
-         
-         translationmap.set("datasource_global", { scope:'global', template: `
+             ` });
+translationmap.set("datasource_global", { scope: 'global', template: `
              DataSource datasource[[id]] = DataSource();`
-           })
-         
-             translationmap.set("datasource_setup", { scope:'setup', template: `
+});
+translationmap.set("datasource_setup", { scope: 'setup', template: `
                datasource[[id]].value = List.generate(10, (i) => "John Gorter $i");
                datasource[[id]].filteredvalue = datasource[[id]]._value;
                statemanagement.setState([[stateid]], datasource[[id]].filteredvalue);
@@ -258,58 +243,62 @@ translationmap.set("numberdatasource_declaration", { scope:'global', template: `
                  datasource[[id]].addListener((){
                    setState(() {});
                  });
-                 `})
-
-translationmap.set("button_execution", { scope:'local', 
+                 ` });
+translationmap.set("button_execution", { scope: 'local',
     template: 'ElevatedButton( onPressed: () { dynamic event; ##TRIGGERS## } , child: const Text("[[label]]")),'
-})
-
-translationmap.set("list_declaration", { scope:'local', 
+});
+translationmap.set("list_declaration", { scope: 'local',
     template: `
     List<ListTile> listviewchildren[[id]]= [];`,
-})
-
-translationmap.set("list_config", { 
-  config: {
-    type:"list"
-  }
-})
-
-translationmap.set("list_setup", { scope:'local', 
+});
+translationmap.set("list_config", {
+    config: {
+        type: "list",
+        defaultAction: "select"
+    }
+});
+translationmap.set("search_config", {
+    config: {
+        defaultAction: "search"
+    }
+});
+translationmap.set("input_config", {
+    config: {
+        defaultAction: "add"
+    }
+});
+translationmap.set("list_setup", { scope: 'local',
     template: `
     listviewchildren[[id]].add(ListTile(title:Text("john")));`
-})
-translationmap.set("list_execution", { scope:'local', 
-    template: "Expanded(child:ListView(children:##SOURCE##.indexed.map((v) => ListTile(onTap: () { dynamic event = v.$1;##TRIGGERS## },title:Text('${v.$2}'))).toList())),",
-})
-
-translationmap.set("label_execution", { scope:'local', 
-    template: 'GestureDetector(onTap:(){ dynamic event;##TRIGGERS## }, child:Text("${##SOURCE##}", style: Theme.of(context).textTheme.headlineMedium)),'
-})
-
-
-translationmap.set("detail_execution", { scope:'local', 
-    template: `Text(##SOURCE##),`
-})
-
-translationmap.set("header_execution", { scope:'local', 
-  template: `Text("[[label]]"),`
-})
-
-translationmap.set("footer_execution", { scope:'local', 
-     template: `Text("[[label]]"),`
-})
-
-translationmap.set("input_execution", { scope:'global', 
-  template: 'TextField(  obscureText: false,  decoration:  InputDecoration( border: OutlineInputBorder(), labelText: "Name", hintText: "${##SOURCE##}") ,onChanged: (value) => statemanagement.setState([[id]], value),),TextButton(child:Text("save"), onPressed:() { dynamic event = statemanagement.getState([[id]]); ##TRIGGERS##;}),'})
-
-
-  translationmap.set("search_execution", { scope:'global', 
-    template: 'TextField(  obscureText: false,  decoration:  InputDecoration( border: OutlineInputBorder()) ,onChanged: (value) => statemanagement.setState([[id]], value),),TextButton(child:Text("search"), onPressed:() { dynamic event = statemanagement.getState([[id]]); ##TRIGGERS##;}),'})
-
-    translationmap.set("arjan_execution", { scope:'local', 
-      template: `Text("hi i am arjan")`
-  })
-
-  translationmap.set('john', { url:'https://github.com/JohnGorter/appgenerator/blob/master/translationmap/flutter/john.dart'})
-  // https://raw.githubusercontent.com/JohnGorter/appgenerator/master/translationmap/flutter/john.dart
+});
+translationmap.set("list_execution", { scope: 'local',
+    template: "Expanded(child:ListView(children:##SOURCE##.indexed.map((v) => ListTile(onTap: () { dynamic event = v.$2;##TRIGGERS## },title:Text('${v.$2.title}'))).toList())),",
+});
+translationmap.set("label_execution", { scope: 'local',
+    template: 'GestureDetector(onTap:(){ dynamic event;##TRIGGERS## }, child:Text("${jsonEncode(##SOURCE##}", style: Theme.of(context).textTheme.headlineMedium)),'
+});
+translationmap.set("detail_imports", { scope: 'imports',
+    template: "import 'dart:convert';"
+});
+translationmap.set("input_imports", { scope: 'imports',
+    template: "import 'dart:convert';"
+});
+translationmap.set("detail_execution", { scope: 'local',
+    template: 'Text("${jsonEncode(##SOURCE##)}"),'
+});
+translationmap.set("header_execution", { scope: 'local',
+    template: `Text("[[label]]"),`
+});
+translationmap.set("footer_execution", { scope: 'local',
+    template: `Text("[[label]]"),`
+});
+translationmap.set("input_execution", { scope: 'global',
+    template: 'TextField(  obscureText: false,  decoration:  InputDecoration( border: OutlineInputBorder(), labelText: "Name", hintText: "${jsonEncode(##SOURCE##)}") ,onChanged: (value) => statemanagement.setState([[id]], value),),TextButton(child:Text("save"), onPressed:() { dynamic event = ListItem(title:statemanagement.getState([[id]]), subtitle:statemanagement.getState([[id]])); ##TRIGGERS##;}),' });
+translationmap.set("search_execution", { scope: 'global',
+    template: 'TextField(  obscureText: false,  decoration:  InputDecoration( border: OutlineInputBorder()) ,onChanged: (value) => statemanagement.setState([[id]], value),),TextButton(child:Text("search"), onPressed:() { dynamic event = statemanagement.getState([[id]]); ##TRIGGERS##;}),' });
+translationmap.set("arjan_execution", { scope: 'local',
+    template: `Text("hi i am arjan")`
+});
+translationmap.set('john', { url: 'https://github.com/JohnGorter/appgenerator/blob/master/translationmap/flutter/john.dart' });
+// https://raw.githubusercontent.com/JohnGorter/appgenerator/master/translationmap/flutter/john.dart
+//# sourceMappingURL=translationmap.flutter.js.map

@@ -1,6 +1,6 @@
 {
     "app":{
-        "target":"flutter",
+        "target":"react",
         "title":"Jeroen",
         "subtitle":"john",
         "color":"red",

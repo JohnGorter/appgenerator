@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 class StringWrapper {
   late dynamic value;
-  StringWrapper([dynamic? value]) {
+  StringWrapper([dynamic value]) {
     this.value = value ?? "";
   }
 }

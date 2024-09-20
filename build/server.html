@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+        App here: <textarea name="app" id="app">
+
+        </textarea>
+        <button id="upload">upload</button>
+        <script type="module">
+            let opener = undefined
+            document.querySelector("#upload").addEventListener('click', async ()=>{
+                let e = document.querySelector("#app").value
+            console.log("uploadeing "+ e + "!")
+                let response = await fetch("/app", {method:"post", body:e, headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    },})
+                console.log("Done")
+                if (response.redirected) {
+                    if (!opener) {
+                        opener = window.open(response.url)
+                    }
+                    opener.location.href = response.url
+                    setTimeout(() => {
+                        opener.location.reload(true)
+                    }, 500);
+                }
+            })
+        </script>
+</body>
+</html>

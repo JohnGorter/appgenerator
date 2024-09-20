@@ -1,8 +1,7 @@
-import { appDec } from "./global.js"
-import  * as fs  from 'fs'
-import { spawn } from 'node:child_process'
-import { IRenderable, RenderWidget  } from "./ast.js";
-import { Translation } from "./transation.js";
+import * as fs from 'fs';
+import { RenderWidget } from "./ast.js";
+import { appDec } from "./global.js";
+import { Translation } from "./translation/translation.js";
 
 
 export class Generator {
