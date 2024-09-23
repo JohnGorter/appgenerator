@@ -1,10 +1,7 @@
 import { spawn, spawnSync } from 'node:child_process';
-import * as fs from 'node:fs';
-import JGen from '../index.js';
-import path from 'path';
+
 
 console.log("current working dir", process.cwd())
-//let child = spawn('flutter', ['run', '-d', 'chrome'], { cwd:'./build/flutter'})  
 console.log("cleaning the build folder")
 let child = spawnSync('flutter', ['clean'], { cwd:'./build/flutter'})  
 console.log("rebuilding the build folder")

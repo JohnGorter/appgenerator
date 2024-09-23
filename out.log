@@ -1,0 +1,75 @@
+current  dir /Users/johngorter/Desktop/appgenerator/build/runner
+listening to file changes
+node:events:497
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: spawn flutter ENOENT
+    at ChildProcess._handle.onexit (node:internal/child_process:286:19)
+    at onErrorNT (node:internal/child_process:484:16)
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)
+Emitted 'error' event on ChildProcess instance at:
+    at ChildProcess._handle.onexit (node:internal/child_process:292:12)
+    at onErrorNT (node:internal/child_process:484:16)
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'spawn flutter',
+  path: 'flutter',
+  spawnargs: [ 'run', '-d', 'macos' ]
+}
+
+Node.js v20.16.0
+current  dir /Users/johngorter/Desktop/appgenerator/build/runner
+listening to file changes
+start hot reload on file change
+Launching lib/main.dart on macOS in debug mode...
+Building macOS application...                                   
+--- xcodebuild: WARNING: Using the first of multiple matching destinations:
+{ platform:macOS, arch:arm64, id:00006000-0004499202F9401E, name:My Mac }
+{ platform:macOS, arch:x86_64, id:00006000-0004499202F9401E, name:My Mac }
+warning: Run script build phase 'Run Script' will be run during every build because it does not specify any outputs. To address this warning, either add output dependencies to the script phase, or configure it to run in every build by unchecking "Based on dependency analysis" in the script phase. (in target 'Flutter Assemble' from project 'Runner')
+✓ Built build/macos/Build/Products/Debug/johnflut.app
+Syncing files to device macOS...                                   164ms
+
+Flutter run key commands.
+r Hot reload. 🔥🔥🔥
+R Hot restart.
+h List all available interactive commands.
+d Detach (terminate "flutter run" but leave application running).
+c Clear the screen
+q Quit (terminate the application on the device).
+
+A Dart VM Service on macOS is available at: http://127.0.0.1:54816/QzjoA798i40=/
+
+Performing hot restart...                                       
+The Flutter DevTools debugger and profiler on macOS is available at: http://127.0.0.1:9102?uri=http://127.0.0.1:54816/QzjoA798i40=/
+Restarted application in 345ms.
+2024-09-23 10:06:24.027 johnflut[10163:6170617] WARNING: Secure coding is automatically enabled for restorable state! However, not on all supported macOS versions of this application. Opt-in to secure coding explicitly by implementing NSApplicationDelegate.applicationSupportsSecureRestorableState:.
+current  dir /Users/johngorter/Desktop/appgenerator/build/runner
+listening to file changes
+start hot reload on file change
+Launching lib/main.dart on macOS in debug mode...
+Building macOS application...                                   
+--- xcodebuild: WARNING: Using the first of multiple matching destinations:
+{ platform:macOS, arch:arm64, id:00006000-0004499202F9401E, name:My Mac }
+{ platform:macOS, arch:x86_64, id:00006000-0004499202F9401E, name:My Mac }
+✓ Built build/macos/Build/Products/Debug/johnflut.app
+2024-09-23 10:06:45.369 johnflut[10411:6172157] WARNING: Secure coding is automatically enabled for restorable state! However, not on all supported macOS versions of this application. Opt-in to secure coding explicitly by implementing NSApplicationDelegate.applicationSupportsSecureRestorableState:.
+Syncing files to device macOS...                                    33ms
+
+Flutter run key commands.
+r Hot reload. 🔥🔥🔥
+R Hot restart.
+h List all available interactive commands.
+d Detach (terminate "flutter run" but leave application running).
+c Clear the screen
+q Quit (terminate the application on the device).
+
+A Dart VM Service on macOS is available at: http://127.0.0.1:54975/nBT5hokOkc8=/
+
+Performing hot restart...                                       
+The Flutter DevTools debugger and profiler on macOS is available at: http://127.0.0.1:9103?uri=http://127.0.0.1:54975/nBT5hokOkc8=/
+Restarted application in 544ms.
+Lost connection to device.
+Lost connection to device.

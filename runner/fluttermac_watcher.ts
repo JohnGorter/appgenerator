@@ -3,7 +3,7 @@ import * as fs from 'node:fs';
 import JGen from '../index.js';
 
 console.log("current  dir", process.cwd())
-let child = spawn('flutter', ['run', '-d', 'macos'], { cwd:'./build/flutter'})  
+let child = spawn('flutter', ['run', '-d', 'macos'], { cwd:'../flutter'})  
 
 
 fs.watchFile("./build/flutter/lib/main.dart", () => {

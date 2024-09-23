@@ -1,22 +1,6 @@
 import "package:flutter/material.dart";
 
 //#pragma: declaration
-class ListItem {
-  String title;
-  String subtitle;
-  ListItem({this.title = "", this.subtitle = ""});
-  ListItem.fromJson(Map<String, dynamic> json) :
-    title = json['title'],
-    subtitle = json['subtitle'];
-  
-  Map<String, dynamic> toJson() {
-    return {
-      'title':title,
-      'subtitle':subtitle
-    };
-  }
-}
-
 class DataSource extends ChangeNotifier {
   List<ListItem> _list = [];
   ListItem? _value;
@@ -51,7 +35,7 @@ class DataSource extends ChangeNotifier {
   ListItem? getValue() => _selected; 
   List<ListItem> getList() => filteredvalue; 
   setValue(v) { _value = v; notifyListeners(); }
-
+  List<String> getErrors() => ["invalid stuff"];
 }
              
 //#pragma: global

@@ -5,6 +5,40 @@ export const translationmap:any = new Map<String, Object>();
 translationmap.set("root", { template: `
 
 import 'package:flutter/material.dart';
+// [[imports]]
+
+ class Item {
+      String title;
+      String subtitle;
+      String longitude;
+      String latitude;
+      String image;
+      String detailtext;
+      String tag; 
+      String icon;
+    
+      Item({
+        this.title = "", 
+        this.subtitle = ""
+        this.longitude = ""
+        this.latitude = ""
+        this.image = ""
+        this.detailtext = ""
+        this.tag = ""
+        this.icon = ""
+      });
+
+      ListItem.fromJson(Map<String, dynamic> json) :
+        title = json['title'],
+        subtitle = json['subtitle'];
+      
+      Map<String, dynamic> toJson() {
+        return {
+          'title':title,
+          'subtitle':subtitle
+        };
+      }
+    }
 
 class StringWrapper {
   StringWrapper({this.value:String = ""})
@@ -266,13 +300,15 @@ translationmap.set("button_execution", { scope:'local',
 
 translationmap.set("list_declaration", { scope:'local', 
     template: `
+    //#pragma: declaration
     List<ListTile> listviewchildren[[id]]= [];`,
 })
 
 translationmap.set("list_config", { 
   config: {
     type:"list",
-    defaultAction:"select"
+    defaultAction:"select",
+    defaultGetter:"getList"
   }
 })
 
@@ -293,11 +329,11 @@ translationmap.set("list_setup", { scope:'local',
     listviewchildren[[id]].add(ListTile(title:Text("john")));`
 })
 translationmap.set("list_execution", { scope:'local', 
-    template: "Expanded(child:ListView(children:##SOURCE##.indexed.map((v) => ListTile(onTap: () { dynamic event = v.$2;##TRIGGERS## },title:Text('${v.$2.title}'))).toList())),",
+    template: "Expanded(child:ListView(children:##SOURCE##.indexed.map((v) => ListTile(onTap: () { dynamic event = v.$2;##TRIGGERS## },title:Text('${v.$2.title}'), subtitle:Text('${v.$2.subtitle}'))).toList())),",
 })
 
 translationmap.set("label_execution", { scope:'local', 
-    template: 'GestureDetector(onTap:(){ dynamic event;##TRIGGERS## }, child:Text("${jsonEncode(##SOURCE##}", style: Theme.of(context).textTheme.headlineMedium)),'
+    template: 'GestureDetector(onTap:(){ dynamic event;##TRIGGERS## }, child:Text("${jsonEncode(##SOURCE##})", style: Theme.of(context).textTheme.headlineMedium)),'
 })
 
 translationmap.set("detail_imports", { scope:'imports', 
@@ -309,7 +345,7 @@ translationmap.set("input_imports", { scope:'imports',
   template: "import 'dart:convert';"
 })
 translationmap.set("detail_execution", { scope:'local', 
-    template: 'Text("${jsonEncode(##SOURCE##)}"),'
+    template: 'Column(children:[ Text("${##SOURCE##?.title}  ${##SOURCE##?.subtitle} ${##SOURCE##?.detailtext} "), Container(width:300, child:Image.network(##SOURCE##?.image ?? "")) ]),'
 })
 
 translationmap.set("header_execution", { scope:'local', 

@@ -1,21 +1,33 @@
 import { exec, spawn, spawnSync } from 'node:child_process';
-import { read, readFileSync } from 'fs';
+import { read, readFileSync, openSync } from 'fs';
 import { fileURLToPath } from 'url';
 import path from 'node:path';
 
-// const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
-// const __dirname = path.dirname(__filename);
 
-// console.log("current working dir", process.cwd())
+const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
+const __dirname = path.dirname(__filename);
 
+class Processes {
+  static find(name:String) : Promise<Boolean> {
+    return new Promise((res, rej) => {
+      exec("ps -A", (err, stdout, stderr) => {
+        res(stdout.toLowerCase().indexOf(name.toLowerCase()) > -1);
+    });
+    })
+  }
+}
+console.log("current working dir", process.cwd())
+var out = openSync('./out.log', 'a');
+var err = openSync('./out.log', 'a');
 
-// exec(`node ${__dirname}/fluttermac_watcher.js`, function(error, stdout, stderr){
-//   console.log(error);
-//   console.log(stderr);
-//   console.log(stdout);
-// });
-
-// // let child = spawn('node', ['fluttermac_watcher'], { cwd:'./build/runner', detached: true, stdio: [ 'ignore', 'ignore', 'ignore' ] });
-// // child.unref();
+// check to see if the watcher is already running..
+if (! await Processes.find("fluttermac_watcher.js")) {
+  console.log("starting the watcher")
+  let child = spawn('node', ['fluttermac_watcher.js'], { cwd:'./build/runner', detached: true, stdio: [ 'ignore', out, err] });
+  child.unref();
+} else {
+  console.log("do nothing: the watcher already runs")
+}
 
 console.log("listening to file changes");
+

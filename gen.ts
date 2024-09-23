@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import { RenderWidget } from "./ast.js";
 import { appDec } from "./global.js";
-import { Translation } from "./translation/translation.js";
+import { Translation } from "./translation/translation.js"
 
 
 export class Generator {

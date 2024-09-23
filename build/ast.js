@@ -94,7 +94,7 @@ export class Renderable {
         let me = this;
         let statements = "";
         if (me.source) {
-            statements = this._renderStatements("source", [me.source], config?.type == "list" ? "getList" : "getValue");
+            statements = this._renderStatements("source", [me.source], config?.defaultGetter || "getValue");
         }
         if (statements == "")
             statements = `'${me.label}'`;

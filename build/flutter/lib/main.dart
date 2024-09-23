@@ -2,10 +2,59 @@ import 'package:flutter/material.dart';
  
  
 
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+
 
 
 import 'dart:convert';
-import 'dart:convert';
+
+
+ class Item {
+      String title;
+      String subtitle;
+      String longitude;
+      String latitude;
+      String image;
+      String detailtext;
+      String tag; 
+      String icon;
+    
+      Item({
+        this.title = "", 
+        this.subtitle = "",
+        this.longitude = "",
+        this.latitude = "",
+        this.image = "",
+        this.detailtext = "",
+        this.tag = "",
+        this.icon = ""
+      });
+
+      Item.fromJson(Map<String, dynamic> json) :
+        title = json['title'],
+        subtitle = json['subtitle'],
+        longitude = json['longitude'],
+        latitude = json['latitude'],
+        image = json['image'],
+        detailtext = json['detailtext'],
+        tag = json['tag'],
+        icon = json['icon'];
+      
+      Map<String, dynamic> toJson() {
+        return {
+          'title':title,
+          'subtitle':subtitle,
+          'longitude':longitude,
+          'latitude':latitude,
+          'image':image,
+          'detailtext':detailtext,
+          'tag':tag,
+          'icon':icon
+        };
+      }
+    }
 
 class StringWrapper {
   late dynamic value;
@@ -36,69 +85,74 @@ StateMnmgt statemanagement = StateMnmgt();
  
  
 
+class ApiDatasource extends ChangeNotifier {
+  String url = "";
+  String mapping = "title:make,subtitle:model,detailtext:detail,image:image";
+  List<String> errors = [];
+  Item? selected;
 
-class ListItem {
-  String title;
-  String subtitle;
-  ListItem({this.title = "", this.subtitle = ""});
-  ListItem.fromJson(Map<String, dynamic> json) :
-    title = json['title'],
-    subtitle = json['subtitle'];
-  
-  Map<String, dynamic> toJson() {
-    return {
-      'title':title,
-      'subtitle':subtitle
-    };
-  }
-}
+  List<dynamic>  response = [];
+  ApiDatasource({this.url = ""}) ;
 
-class DataSource extends ChangeNotifier {
-  List<ListItem> _list = [];
-  ListItem? _value;
-  List<ListItem> filteredvalue = [];
-  ListItem? get value => _value;
-  ListItem? get selected => _value;
-  ListItem? _selected ;
-
-  set value(v) {
-      _value = v;
+  set ur(v) {
+      url = v;
       notifyListeners();
       
   }
+  Future<List<dynamic>> load() async {
+    () async { 
+      try {
+        response = json.decode(await http.read(Uri.parse(url))); notifyListeners();
+      } catch(e) {
+        print("ERROR: $e");
+        errors.add("Timeout, API source is not available");
+        notifyListeners();
+     }
+      }();
+    return response;
+  }
 
-  add(argument) {
-    _list.add(argument);
+   select(eventelement) {
+    // e contains the item
+    selected = getList().where((e) => e.title == eventelement.title).first;
     notifyListeners(); 
   }
-  select(f) { this._selected = f;  notifyListeners();}
-  search(f){
-    if (f == "") filteredvalue = _list;
-    else filteredvalue = _list.where((v) => v.title.indexOf(f) >= 0).toList();
-   // statemanagement.setState([[stateid]], filteredvalue);
-    print('filtered@');
-    notifyListeners();
+
+  setValue(u)  { url = u; () async { response = json.decode(await http.read(Uri.parse(url))); notifyListeners(); }();}
+  Item  getValue()  { return selected ?? Item(); }
+  List<Item>  getList()  {  return response.map((e) =>
+      Item(
+        title:e[_getMapping('title')] ?? "",
+        subtitle: e[_getMapping('subtitle')]?? "",
+        detailtext: e[_getMapping('detailtext')]?? "",
+        tag: e[_getMapping('tag')]?? "",
+        icon: e[_getMapping('icon')]?? "",
+        longitude: e[_getMapping('longitude')]?? "",
+        latitude: e[_getMapping('latitude')]?? "",
+        image: e[_getMapping('image')]?? ""
+      )).toList();
+      }
+  List<String> getErrors() => errors;
+
+  _getMapping(String field){
+    if (mapping.length > 0) {
+      for (String map in mapping.split(",")) {
+        if (map.split(":")[0] == field) return map.split(":")[1];
+      }
+    }
+    return "";
   }
-
-  refresh(argument) {
-    notifyListeners(); 
-  }
-
-  ListItem? getValue() => _selected; 
-  List<ListItem> getList() => filteredvalue; 
-  setValue(v) { _value = v; notifyListeners(); }
-
 }
              
 
 
+    //#pragma: declaration
     List<ListTile> listviewchildren3= [];
 
  
  
 
-
-DataSource datasource1 = DataSource();
+ApiDatasource datasource1 = ApiDatasource(url:'http://localhost:1337/cars');
 
 
 
@@ -120,7 +174,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Flutter App Generator Demo'),
+      home: const MyHomePage(title: 'Car selector!'),
     );
   }
 }
@@ -137,12 +191,10 @@ class _MyHomePageState extends State<MyHomePage> {
    @override
   void initState() {
     
-datasource1._list = List.generate(10, (i) => ListItem(title:"John${i}", subtitle:"Gorter"));
-datasource1.filteredvalue = datasource1._list;
-// statemanagement.setState([[stateid]], datasource1.filteredvalue);
 datasource1.addListener((){
   setState(() {});
 });
+datasource1.load(); 
 
     listviewchildren3.add(ListTile(title:Text("john")));
  
@@ -160,16 +212,25 @@ datasource1.addListener((){
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            TextField(  obscureText: false,  decoration:  InputDecoration( border: OutlineInputBorder()) ,onChanged: (value) => statemanagement.setState(15, value),),TextButton(child:Text("search"), onPressed:() { dynamic event = statemanagement.getState(15); datasource1.search(event);
-;}),
-Expanded(child:ListView(children:datasource1.getList()
+            Expanded(child:ListView(children:datasource1.getList()
 .indexed.map((v) => ListTile(onTap: () { dynamic event = v.$2;datasource1.select(event);
- },title:Text('${v.$2.title}'))).toList())),
-Text("${jsonEncode(datasource1.getValue()
-)}"),
-TextField(  obscureText: false,  decoration:  InputDecoration( border: OutlineInputBorder(), labelText: "Name", hintText: "${jsonEncode(datasource1.getValue()
-)}") ,onChanged: (value) => statemanagement.setState(5, value),),TextButton(child:Text("save"), onPressed:() { dynamic event = ListItem(title:statemanagement.getState(5), subtitle:statemanagement.getState(5)); datasource1.add(event);
-;}),
+ },title:Text('${v.$2.title}'), subtitle:Text('${v.$2.subtitle}'))).toList())),
+Column(children:[ Text("${datasource1.getValue()
+?.title}  ${datasource1.getValue()
+?.subtitle} ${datasource1.getValue()
+?.detailtext} "), Container(width:300, child:Image.network(datasource1.getValue()
+?.image ?? "")) ]),
+
+Expanded(
+  child:ListView(
+    children:datasource1.getErrors()
+
+.indexed.map((v) => ListTile(
+      title:Text('${v.$2}', style: TextStyle(color:Colors.red, fontSize: 12),))).toList())),
+
+
+
+
 
           ],
         ),

@@ -6,6 +6,10 @@ link.setAttribute('rel', 'stylesheet');
 link.setAttribute('href', '[[style]]');
 document.head.appendChild(link);
 
+var link = document.createElement('style');
+link.innerHTML = '[[style]]';
+document.head.appendChild(link);
+
 // [[global]]
 
 class App extends window.React.Component
@@ -19,9 +23,7 @@ class App extends window.React.Component
     render() {
         return (
               <div>
-             <h4>[[color]] </h4>
               <h1>[[title]]</h1>
-              <h2>[[siebe]]</h2>
                 { /* [[local]] */ } 
              </div>
           )
@@ -147,6 +149,7 @@ translationmap.set("button_declaration", { scope: 'global',
 ` });
 translationmap.set("list_config", { config: {
         type: "list",
+        defaultGetter: "getList",
         defaultAction: "select"
     }
 });
@@ -162,11 +165,12 @@ translationmap.set("input_config", {
 });
 translationmap.set("list_execution", { scope: 'local',
     template: `
-        <div>{##SOURCE##.map(element => <div onClick={() => {let event = element;  ##TRIGGERS##}} key={JSON.stringify(element)}> { element.title } </div>)}</div>
+        <div>{##SOURCE##.map(element => <div onClick={() => {let event = element;  ##TRIGGERS##}} key={JSON.stringify(element)}> <b>{ element.title  } </b><small style={{marginBottom:10}}>{ element.subtitle  } </small></div>)}</div>
     `
 });
 translationmap.set("detail_execution", { scope: 'global',
-    template: `<div>SELECTED ITEM: {JSON.stringify(##SOURCE##)}</div>
+    template: `<div style={{marginTop:50}}>{##SOURCE##?.title} {##SOURCE##?.subtitle} {##SOURCE##?.detailtext}</div>
+        <div style={{width:300}}><img style={{width:'100%'}} src={##SOURCE##?.image} /></div>
 ` });
 translationmap.set("input_execution", { scope: 'global',
     template: `<input type="text" placeholder={String(JSON.stringify(##SOURCE##))} value={window.statemanagement.getState([[id]]) || ''} onChange={(e) => this.handleChange[[id]](e)}></input><input type="submit" onClick={(e) => {let event = window.statemanagement.getState([[id]]);##TRIGGERS##}}></input>

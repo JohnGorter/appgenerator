@@ -1,6 +1,51 @@
 import 'package:flutter/material.dart';
 // [[imports]]
 
+ class Item {
+      String title;
+      String subtitle;
+      String longitude;
+      String latitude;
+      String image;
+      String detailtext;
+      String tag; 
+      String icon;
+    
+      Item({
+        this.title = "", 
+        this.subtitle = "",
+        this.longitude = "",
+        this.latitude = "",
+        this.image = "",
+        this.detailtext = "",
+        this.tag = "",
+        this.icon = ""
+      });
+
+      Item.fromJson(Map<String, dynamic> json) :
+        title = json['title'],
+        subtitle = json['subtitle'],
+        longitude = json['longitude'],
+        latitude = json['latitude'],
+        image = json['image'],
+        detailtext = json['detailtext'],
+        tag = json['tag'],
+        icon = json['icon'];
+      
+      Map<String, dynamic> toJson() {
+        return {
+          'title':title,
+          'subtitle':subtitle,
+          'longitude':longitude,
+          'latitude':latitude,
+          'image':image,
+          'detailtext':detailtext,
+          'tag':tag,
+          'icon':icon
+        };
+      }
+    }
+
 class StringWrapper {
   late dynamic value;
   StringWrapper([dynamic value]) {
@@ -44,7 +89,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Flutter App Generator Demo'),
+      home: const MyHomePage(title: '[[title]]'),
     );
   }
 }

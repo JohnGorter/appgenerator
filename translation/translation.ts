@@ -63,19 +63,23 @@ export class Translation {
     }
 
     async getConfig(classname:String) {
+        console.log("getting config for ", classname)
         let extension = this.#target == "flutter" ? "dart" : "js";
-        if (fs.existsSync(`./translationmap/${this.#target}/${classname}.${extension}`)) {
+        if (fs.existsSync(`./translation/${this.#target}/${classname}.${extension}`)) {
             // read template from template file
-            let data = fs.readFileSync(`./translationmap/${this.#target}/${classname}.${extension}`, 'utf8');
+            let data = fs.readFileSync(`./translation/${this.#target}/${classname}.${extension}`, 'utf8');
             let marker = `//#pragma: config`;
+            // debugger;
             if (data.indexOf(marker) < 0) return Promise.resolve(''); 
             let eosmarker = `//#pragma:`
             let template = data.substring(data.indexOf(marker)).replace(marker, ''); 
             let end = template.indexOf(eosmarker);
             if (end > 0) template = template.substring(0, end); 
-            return Promise.resolve(eval(template));
+            console.log("getting config for ", template)
+            return Promise.resolve(eval("("+template+")"));
         } else {
             let m = await import(`./translationmap.${this.#target}.js`)
+            console.log("getting config for ", m.translationmap.get(`${classname}_config`)?.config)
             return m.translationmap.get(`${classname}_config`)?.config;
         }
     }

@@ -1,27 +1,15 @@
+
 {
     "app":{
         "target":"flutter",
-        "title":"Jeroen",
+        "title":"Car selector!",
         "subtitle":"john",
-        "color":"red",
+        "style":"body { height:100%; } * { font-family:tahoma } div { display:flex;flex-flow:column;align-items:center;justify-content:center;height:100%}",
         "children": [
-            { "column": {
-                "children": [
-                    {"label" : { "id":"2", "label":"tddddest"}},
-                    {"label" : { "id":"3", "label":"test"}},
-                    {"row": {
-                        "children": [                   
-                            {"label" : { "id":"4", "label":"test"}},
-                            {"label" : { "id":"5", "label":"test"}},
-                            {"label" : { "id":"6", "label":"test"}},
-                            {"label" : { "id":"7", "label":"test"}}
-                        ]
-                    }
-                    }
-                ]
-            }
-        }
+            { "apidatasource" : { "id":"1", "url":"http://localhost:1337/cars", "mapping": "title:make,subtitle:model,detailtext:detail,image:image" }},
+            { "list": { "source":"1", "id":"3", "triggers":"1"}},
+            { "detail": { "source":"1", "id":"4"}},
+            { "errors": { "source":"1", "id":"5"}}
         ]
     }
 }
-
