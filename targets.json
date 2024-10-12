@@ -3,6 +3,7 @@
         "flutter": { 
             "output": "./build/flutter/lib/main.dart", 
             "runner": "flutter_runner.js", 
+            "watcher": "flutter_watcher.js", 
             "translationmap" : "flutter" 
         },
         "flutter-mac": { 
@@ -13,6 +14,7 @@
         "react": { 
             "output": "./build/react/index.js", 
             "runner": "react_runner.js", 
+            "watcher": "react_watcher.js", 
             "translationmap" : "react" 
         },
         "vue": { 

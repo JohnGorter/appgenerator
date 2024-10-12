@@ -14,12 +14,10 @@
             let opener = undefined
             document.querySelector("#upload").addEventListener('click', async ()=>{
                 let e = document.querySelector("#app").value
-            console.log("uploadeing "+ e + "!")
                 let response = await fetch("/app", {method:"post", body:e, headers: {
       'Accept': 'application/json',
       'Content-Type': 'application/json'
     },})
-                console.log("Done")
                 if (response.redirected) {
                     if (!opener) {
                         opener = window.open(response.url)

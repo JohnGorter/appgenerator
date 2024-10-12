@@ -1,69 +1,90 @@
+import { TraceWriter, traceWriter } from './TraceWriter.js';
 let globaltranslation = undefined;
 export class Renderable {
     id;
     level = '';
     children = [];
     constructor(id, state) {
+        traceWriter.verbose("Constructing the object", TraceWriter.AREA_TREEBUILDING);
         this.id = id;
+        traceWriter.verbose("Copying over the state fron JSON to object", TraceWriter.AREA_TREEBUILDING);
         this.fromState(state);
+        console.log("after state:", this);
     }
     fromState(s) {
+        let me = this;
         for (let p of Object.keys(s)) {
-            if (p == "children") {
+            if (Array.isArray(s[p])) {
                 for (let c of s[p]) {
+                    traceWriter.verbose("Generating object " + c + " as child", TraceWriter.AREA_TREEBUILDING);
                     let r = RenderWidget.fromObject(c);
-                    if (r)
-                        this.children.push(r);
+                    if (r) {
+                        me[p] = me[p] || [];
+                        me[p].push(r);
+                    }
                 }
             }
             else {
+                traceWriter.verbose("Adding property " + p + " with value " + s[p] + " to object", TraceWriter.AREA_TREEBUILDING);
                 this[p] = s[p];
             }
         }
     }
     parseResult(result) {
-        if (result) {
-            let me = this;
-            for (let k of Object.keys(me)) {
-                // console.log("replacing", k, me[k])
+        let me = this;
+        for (let k of Object.keys(me)) {
+            traceWriter.verbose(`Replacing template placeholder [[${k}]] with value ${me[k]}`, TraceWriter.AREA_CODEGENERATION);
+            if (!Array.isArray(me[k]))
                 result = result.replaceAll(`[[${k}]]`, me[k]);
-            }
         }
         return result;
     }
-    async render(level, template, setupmarker, localmarker) {
+    async render(level, template, scope) {
         let me = this;
-        let lsp = localmarker;
-        let sup = setupmarker;
+        if (me.constructor.name == "drawer")
+            console.log("drawer template");
         this.level = level + ".";
-        // template = template.replaceAll(ls, lsp).replaceAll(su, sup)
+        traceWriter.verbose(`Rendering code for level ${level} with template ${template}`, TraceWriter.AREA_CODEGENERATION);
+        //let othercode = await this.renderOtherScope("drawer")
         let localcode = await this.renderLocalScope();
         let setupcode = await this.renderSetupScope();
         // find the nearest marker and paste the code 
         if (localcode.length > 0) {
-            for (let i = level.length; i > 0; i--) {
-                let placeholder = `{ /* [[${'.'.repeat(i)}local]] */ }`;
+            for (let i = this.level.length; i > 0; i--) {
+                let placeholder = `[[${'.'.repeat(i)}${scope}]]`;
+                traceWriter.verbose(`For ${scope}: Testing for placeholder ${placeholder} in template`, TraceWriter.AREA_CODEGENERATION);
                 if (template.indexOf(placeholder) > -1) {
+                    traceWriter.verbose(`For localcode: Replacing placeholder ${placeholder} with ${localcode}`, TraceWriter.AREA_CODEGENERATION);
                     template = template.replaceAll(`${placeholder}`, `${localcode}\n${placeholder}`);
                     break;
                 }
             }
         }
         if (setupcode.length > 0) {
-            for (let i = level.length; i > 0; i--) {
-                let placeholder = `{ /* [[${'.'.repeat(i)}setup]] */ }`;
+            for (let i = this.level.length; i > 0; i--) {
+                let placeholder = `[[${'.'.repeat(i)}setup]]`;
+                traceWriter.verbose(`For setupcode: Testing for placeholder ${placeholder} in template`, TraceWriter.AREA_CODEGENERATION);
                 if (template.indexOf(placeholder) > -1) {
+                    traceWriter.verbose(`For setupcode: Replacing placeholder ${placeholder} with ${localcode}`, TraceWriter.AREA_CODEGENERATION);
                     template = template.replaceAll(`${placeholder}`, `${setupcode}\n${placeholder}`);
                     break;
                 }
             }
         }
-        if (me.children) {
-            for (let c of me.children) {
-                template = await c.render(this.level, template, sup, lsp);
+        for (const arr of Object.keys(me)) {
+            if (Array.isArray(me[arr])) {
+                for (let c of me[arr]) {
+                    traceWriter.verbose(`Rendering child: ${c}`, TraceWriter.AREA_CODEGENERATION);
+                    template = await c.render(this.level, template, arr);
+                }
+                if (me.constructor.name == "page")
+                    console.log(`removing [[${'.'.repeat(this.level.length)}${arr}]] from template`);
+                template = template.replaceAll(`[[${'.'.repeat(this.level.length)}${arr}]]`, ``);
             }
         }
-        return template; //.replaceAll(sup, "").replaceAll(lsp, "")
+        traceWriter.verbose(`Completed template ${template}`, TraceWriter.AREA_CODEGENERATION);
+        // remove my placeholder
+        return template;
     }
     async renderLocalScope() {
         return await this._renderScope("execution");
@@ -74,6 +95,9 @@ export class Renderable {
     async renderGlobalScope() {
         return await this._renderScope("global");
     }
+    async renderStyleScope() {
+        return await this._renderScope("styles");
+    }
     async renderSetupScope() {
         return await this._renderScope("setup");
     }
@@ -81,31 +105,41 @@ export class Renderable {
         return await this._renderScope("imports");
     }
     async _renderScope(scope) {
+        if (scope == "styles") {
+            console.log("scope for styles!", this.constructor.name);
+        }
+        ;
+        traceWriter.verbose(`Rendering scope: ${scope}`, TraceWriter.AREA_CODEGENERATION);
         let config = await globaltranslation.getConfig(this.constructor.name.toLowerCase());
         let result = await globaltranslation.getTemplate(this.constructor.name.toLowerCase(), scope);
         if (!result)
             return "";
+        traceWriter.verbose(`Config ${config}`, TraceWriter.AREA_CODEGENERATION);
+        traceWriter.verbose(`Template ${result} for scope ${scope}`, TraceWriter.AREA_CODEGENERATION);
         let template = this.parseResult(result);
-        let lsp = `{ /* [[local]] */ }`;
-        let sup = `{ /* [[setup]] */ }`;
-        let ulsp = `{ /* [[${this.level}local]] */ }`;
-        let usup = `{ /* [[${this.level}setup]] */ }`;
-        template = template.replaceAll(lsp, ulsp).replaceAll(sup, usup);
+        let sup = `[[setup]]`;
+        let usup = `[[${this.level}setup]]`;
+        template = template.replaceAll(sup, usup);
+        for (let arr of Object.keys(this))
+            if (Array.isArray(this[arr])) {
+                let lsp = `[[${arr}]]`;
+                let ulsp = `[[${this.level}${arr}]]`;
+                template = template.replaceAll(lsp, ulsp);
+            }
         let me = this;
         let statements = "";
         if (me.source) {
             statements = this._renderStatements("source", [me.source], config?.defaultGetter || "getValue");
         }
-        if (statements == "")
-            statements = `'${me.label}'`;
         template = template.replaceAll(`##SOURCE##`, statements);
         statements = "";
         if (me.triggers) {
             let triggers = me.triggers.split(",");
-            // console.log("triggers:", triggers);
             statements = this._renderStatements("trigger", triggers, me.action || config?.defaultAction || "refresh");
         }
         template = template.replaceAll(`##TRIGGERS##`, statements);
+        if (scope == "styles")
+            console.log("template", template);
         return template;
     }
     _renderStatements(target, placeholders, action) {
@@ -136,6 +170,7 @@ export class RenderWidget {
         return element;
     }
     static generateClass(classname) {
+        traceWriter.info("Generating a new class for " + classname, TraceWriter.AREA_TREEBUILDING);
         return eval(`
             (class ${classname} extends ${Renderable} {
                 constructor(id, s){
@@ -146,22 +181,27 @@ export class RenderWidget {
     }
     static fromObject(o) {
         let classname = Object.keys(o)[0];
+        traceWriter.info("Creating object from JSON for " + classname, TraceWriter.AREA_TREEBUILDING);
         let target = Object.values(o)[0];
         let ctor = RenderWidget.generateClass(classname);
         if (!ctor)
             ctor = Renderable;
-        // console.log("o", target.id);  
         let tree = ctor ? new ctor(target.id, target) : null;
         return tree;
     }
     static async render(target, root, translation) {
-        return this._render(target, root, translation);
+        traceWriter.info(`Rendering code for ${root.constructor.name}`, TraceWriter.AREA_CODEGENERATION);
+        return await this._render(target, root, translation, "children");
     }
     static async _collectImportLines(root, lines) {
-        lines.push(await root.renderImportScope());
-        if (root.children) {
-            for (let c of root.children) {
-                await this._collectImportLines(c, lines);
+        let line = await root.renderImportScope();
+        if (!lines.find(l => l == line))
+            lines.push(line);
+        for (let arr of Object.keys(root)) {
+            if (Array.isArray(root[arr])) {
+                for (let c of root[arr]) {
+                    await this._collectImportLines(c, lines);
+                }
             }
         }
     }
@@ -169,82 +209,89 @@ export class RenderWidget {
         let line = await root.renderDeclaration();
         if (!lines.find(l => l == line))
             lines.push(line);
-        if (root.children) {
-            for (let c of root.children) {
-                await this._collectDeclarationLines(c, lines);
+        for (let arr of Object.keys(root)) {
+            if (Array.isArray(root[arr])) {
+                for (let c of root[arr]) {
+                    await this._collectDeclarationLines(c, lines);
+                }
             }
         }
     }
     static async _collectGlobalLines(root, lines) {
         lines.push(await root.renderGlobalScope());
-        if (root.children) {
-            for (let c of root.children) {
-                await this._collectGlobalLines(c, lines);
+        for (let arr of Object.keys(root)) {
+            if (Array.isArray(root[arr])) {
+                for (let c of root[arr]) {
+                    await this._collectGlobalLines(c, lines);
+                }
             }
         }
     }
-    static async _render(target, root, translation) {
-        //return import(`./translationmap.${target.translationmap}.js`).then(m => {
-        //    translationmap = m.translationmap;
-        // let template = translationmap.get("root")?.template
+    static async _collectStyleLines(root, lines) {
+        lines.push(await root.renderStyleScope());
+        for (let arr of Object.keys(root)) {
+            if (Array.isArray(root[arr])) {
+                for (let c of root[arr]) {
+                    await this._collectStyleLines(c, lines);
+                }
+            }
+        }
+    }
+    static removeEmptyLines(lines) {
+        let retval = [];
+        for (let l of lines) {
+            if (l)
+                retval.push(l);
+        }
+        return retval;
+    }
+    static async _render(target, root, translation, scope) {
         globaltranslation = translation;
         let template = await translation.getTemplate("root");
-        // mark the local and setup scopes, make them unique for this scope
-        let lsp = `{ /* [[local]] */ }`;
-        let sup = `{ /* [[setup]] */ }`;
-        let level = ".";
-        let ulsp = `{ /* [[${level}local]] */ }`;
-        let usup = `{ /* [[${level}setup]] */ }`;
-        template = template.replaceAll(lsp, ulsp).replaceAll(sup, usup);
         if (!template)
             return "-- error -- missing template";
+        // mark the local and setup scopes, make them unique for this scope
+        let lsp = `[[${scope}]]`;
+        let sup = `[[setup]]`;
+        let level = ".";
+        let ulsp = `[[${level}${scope}]]`;
+        let usup = `[[${level}setup]]`;
+        template = template.replaceAll(lsp, ulsp).replaceAll(sup, usup);
         let gs = '// [[global]]';
         let imports = '// [[imports]]';
+        let styles = '// [[styles]]';
         template = root.parseResult(template);
         // walk the tree and render the global section
         let importlines = [];
         await this._collectImportLines(root, importlines);
+        importlines = this.removeEmptyLines(importlines);
         template = template.replaceAll(`${imports}`, `${imports} \n ${importlines.join('\n')}`);
+        let styleLines = [];
+        await this._collectStyleLines(root, styleLines);
+        styleLines = this.removeEmptyLines(styleLines);
+        template = template.replaceAll(`${styles}`, `${styles} \n ${styleLines.join('\n')}`);
         let globallines = [];
         await this._collectGlobalLines(root, globallines);
+        globallines = this.removeEmptyLines(globallines);
         template = template.replaceAll(`${gs}`, `${gs} \n ${globallines.join('\n')}`);
         let declarationlines = [];
         await this._collectDeclarationLines(root, declarationlines);
+        declarationlines = this.removeEmptyLines(declarationlines);
         template = template.replaceAll(`${gs}`, `${gs} \n ${declarationlines.join('\n')}`);
-        // template = template.replaceAll(ls, lsp).replaceAll(su, sup)
-        template = await root.render(level, template, sup, lsp);
-        // let localcode = await root.renderLocalScope()
-        // let setupcode = await root.renderSetupScope(); 
-        // template = template.replaceAll(`${lsp}`, `${lsp} \n ${localcode}`)
-        // template = template.replaceAll(`${sup}`, `${sup} \n ${setupcode}`)
-        // console.log("template before walk", template)
-        // walk the tree and render the global section
-        // for (let c of root.children)
-        //   template = await c.render(level, template, sup, lsp);
+        for (let arr of Object.keys(root)) {
+            if (Array.isArray(root[arr]))
+                template = await root.render(level, template, arr);
+        }
         // remove the markers
-        for (let marker of ['setup', 'local', 'global', 'imports']) {
+        for (let marker of ['setup', 'local', 'global', 'imports', 'styles']) {
             for (let i = 10; i > 0; i--) {
-                let placeholder = `{ /* [[${'.'.repeat(i)}${marker}]] */ }`;
+                let placeholder = `[[${'.'.repeat(i)}${marker}]]`;
                 if (template.indexOf(placeholder) > -1) {
                     template = template.replaceAll(`${placeholder}`, ``);
                 }
             }
         }
-        // console.log("template after walk", template)
-        // let l = ""; 
-        // for (let c of root.children) {
-        //     l += await c.renderLocalScope() 
-        // }
-        // template = template.replaceAll(`${ls}`, `${ls} \n ${l}`)
-        // // walk the tree and render the global section
-        // let s = ""; 
-        // for (let c of root.children) {
-        //     s += await c.renderSetupScope() 
-        // }
-        // template = template.replaceAll(`${su}`, `${su} \n ${s}`)
-        // console.log("template", template); 
-        return template.replaceAll(gs, "").replaceAll(imports, "").replaceAll(usup, "").replaceAll(ulsp, "");
-        // });
+        return template.replaceAll(gs, "").replaceAll(imports, "").replaceAll(usup, "").replaceAll(ulsp, "").replaceAll(styles, "");
     }
 }
 //# sourceMappingURL=ast.js.map

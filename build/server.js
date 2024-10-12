@@ -33,9 +33,7 @@ app.use("/react", express.static(__dirname + "/react"));
 app.use("/flutter", express.static(__dirname + "/flutter/build/web"));
 app.use("/", express.static(__dirname + "/flutter/build/web"));
 app.post('/app', async (req, res) => {
-    console.log("--->", JSON.stringify(req.body));
-    await new JGen().start(JSON.stringify(req.body));
-    console.log("done±");
+    await new JGen().startJSON("run", JSON.stringify(req.body), true);
     return res.redirect(`/${req.body.app.target}/index.html`);
 });
 app.get('/cars', (req, res) => {

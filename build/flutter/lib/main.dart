@@ -2,13 +2,16 @@ import 'package:flutter/material.dart';
  
  
 
+
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 
 
 
+
 import 'dart:convert';
+
 
 
  class Item {
@@ -85,6 +88,7 @@ StateMnmgt statemanagement = StateMnmgt();
  
  
 
+
 class ApiDatasource extends ChangeNotifier {
   String url = "";
   String mapping = "title:make,subtitle:model,detailtext:detail,image:image";
@@ -146,14 +150,14 @@ class ApiDatasource extends ChangeNotifier {
              
 
 
-    //#pragma: declaration
     List<ListTile> listviewchildren3= [];
 
+
  
  
 
-ApiDatasource datasource1 = ApiDatasource(url:'http://localhost:1337/cars');
 
+ApiDatasource datasource1 = ApiDatasource(url:'http://127.0.0.1:1337/cars');
 
 
 
@@ -174,7 +178,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Car selector!'),
+      home: const MyHomePage(title: 'Car selestor!'),
     );
   }
 }
@@ -196,7 +200,10 @@ datasource1.addListener((){
 });
 datasource1.load(); 
 
-    listviewchildren3.add(ListTile(title:Text("john")));
+listviewchildren3.add(ListTile(title:Text("john")));
+
+
+
  
     super.initState();
   }
@@ -212,24 +219,20 @@ datasource1.load();
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Expanded(child:ListView(children:datasource1.getList()
+            
+datasource1.getList()
+.length > 0 ? Expanded(child:ListView(children:datasource1.getList()
 .indexed.map((v) => ListTile(onTap: () { dynamic event = v.$2;datasource1.select(event);
- },title:Text('${v.$2.title}'), subtitle:Text('${v.$2.subtitle}'))).toList())),
-Column(children:[ Text("${datasource1.getValue()
+ },title:Text('${v.$2.title}'), subtitle:Text('${v.$2.subtitle}'))).toList())) : Expanded(child:Container(alignment:Alignment.center, color:Colors.green, child:Text('no data for list'))),
+
+
+
+Container(height:250 ,child:Column(children:[ Text("${datasource1.getValue()
 ?.title}  ${datasource1.getValue()
 ?.subtitle} ${datasource1.getValue()
-?.detailtext} "), Container(width:300, child:Image.network(datasource1.getValue()
-?.image ?? "")) ]),
-
-Expanded(
-  child:ListView(
-    children:datasource1.getErrors()
-
-.indexed.map((v) => ListTile(
-      title:Text('${v.$2}', style: TextStyle(color:Colors.red, fontSize: 12),))).toList())),
-
-
-
+?.detailtext} "), if (datasource1.getValue()
+?.image != "") Container(width:300, child:Image.network(datasource1.getValue()
+?.image ?? "")) ])),
 
 
           ],

@@ -1,4 +1,0 @@
-//#pragma: execution
-Text(
-          "${'[[title]]'}"
-    ),

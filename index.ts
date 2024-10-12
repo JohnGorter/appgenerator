@@ -1,75 +1,78 @@
-import { spawn, spawnSync } from 'child_process';
-import * as fs from 'node:fs';
-import { Generator } from './gen.js';
-import targets from './targets.json' with { type: "json" };
-import { Translation } from './translation/translation.js';
-
-import { readFileSync } from 'fs';
-
-
-
+import { spawnSync } from 'child_process'
+import * as fs from 'node:fs'
+import { Translation } from './translation/translation.js'
+import { readFileSync, watchFile } from 'fs'
+import { traceWriter, TraceWriter } from './TraceWriter.js'
+import { RenderWidget } from './ast.js'
 
 export default class JGen 
 {
-    restart(file:String = "./app.json") {
-        
-        console.log("reading file", process.cwd() + "/" + file)
-
-        let f = readFileSync(file as any, 'utf-8')
-        // console.log("starting", f)
-        let app = JSON.parse(f)
-        let targetsany = targets as any;
-        let appany:any = app;
-        let t  = targetsany.targets[appany?.app?.target];
-        const translation = new Translation(t.translationmap); 
-        //new Generator().generate("./build/flutter/lib/main.dart", app); 
-        if (!t) 
-            console.log("Error: - no target specified -")
-        else 
-            new Generator().generate(t, app, translation); 
+    async #_getTargetConfig(app:any) {
+        traceWriter.info("Getting target from config targets.json file", TraceWriter.AREA_GENERAL);
+        let targets = JSON.parse(readFileSync('./targets.json', 'utf-8'))
+        return Promise.resolve(targets.targets[app?.app?.target]);
     }
 
-    async start(appstring:string, startRunner: Boolean = false) {
-       
-        // console.log("starting", f)
-        let targets = JSON.parse(readFileSync('./targets.json', 'utf-8'))
-        let app = JSON.parse(appstring)
-        let targetsany = targets as any;
-        let appany:any = app;
-
-        console.log("targets", targets); 
-        console.log("target", appany) 
-        let t  = targetsany.targets[appany?.app?.target];
-
-        // console.log("cwd", process.cwd())
-        // console.log("spawning runner ->", t.runner)
-        if (startRunner) {
-            let child = spawn('node', [`./build/runner/${t.runner}`])  
-            child.stdout.pipe(process.stdout)
-            child.stderr.pipe(process.stderr)
+    async start(command:string, appfile:string, watch:Boolean = false) {
+        console.log("watch", watch);
+        if (watch) {
+            watchFile(appfile, async () => {
+                traceWriter.info("Starting a new run", TraceWriter.AREA_GENERAL)
+                let app = JSON.parse(readFileSync(appfile, 'utf-8'))
+                console.log("compiling file")
+                let target = await this.#_getTargetConfig(app)
+                await this.compile(target, app)
+                console.log("done")
+            })
         }
-        // console.log("runner spawned")
-        fs.watchFile("./app.json", () => {
-            console.log("start  recompilation")
-            new JGen().restart()
-          }
-         );
+        traceWriter.info("Starting a new run", TraceWriter.AREA_GENERAL)
+        let appdef = readFileSync(appfile, 'utf-8')
+        await this.startJSON(command, appdef, watch)
+    }
 
-        // console.log("t", t.translationmap)
-        const translation = new Translation(t.translationmap); 
-
-        //new Generator().generate("./build/flutter/lib/main.dart", app); 
-        if (!t) 
-            console.log("Error: - no target specified -")
-        else {
-            await new Generator().generate(t, app, translation); 
-            console.log("spawning runner")
-            let child = spawnSync('node', [`./build/runner/${t.runner}`]) 
-            console.log("spawning runner, done")
-
-            console.log(child.output.toString())
-            // child.stdout.pipe(process.stdout)
-            // child.stderr.pipe(process.stderr)
+    async startJSON(command:string, appdef:string, watch:Boolean = false) {
+        traceWriter.info("Starting a new run", TraceWriter.AREA_GENERAL)
+        let app = JSON.parse(appdef)
+        console.log("compiling file")
+        let target = await this.#_getTargetConfig(app)
+        await this.compile(target, app)
+        if (command == "run") {
+            console.log("starting runner" + `./build/${watch ? 'watchers/' + target.watcher : 'runners/' + target.runner}`)
+            traceWriter.info("Starting runner", TraceWriter.AREA_GENERAL)
+            spawnSync('node', [`./build/${watch ? 'watchers/' + target.watcher : 'runners/' + target.runner}`], {stdio: [process.stdin, process.stdout, process.stderr],}) 
+            console.log("done starting runner" + `./build/${watch ? 'watchers/' + target.watcher : 'runners/' + target.runner}`)
         }
+        console.log("done")
+    }
+
+    async compile(target:any, app:any) {
+       traceWriter.info("Starting generation", TraceWriter.AREA_GENERAL)
+        if (!target) {
+            traceWriter.error("Error: - no valid target specified -", TraceWriter.AREA_GENERAL)
+            return;
+        }
+        traceWriter.info("Translation found, generating code for output", TraceWriter.AREA_GENERAL)
+        fs.writeFileSync(target.output, await this.#_generate(target, app, new Translation(target.translationmap)))
+        traceWriter.info("Code generation completed, writing output to " + target.output, TraceWriter.AREA_GENERAL)
+    }
+
+    async #_generate(target:any, app:any, translation:Translation ) 
+    { 
+        traceWriter.info("Starting generation", TraceWriter.AREA_CODEGENERATION)
+        return await this.#_generateCode(target, await this.#_loadComponents(app), translation)
+    }
+
+    async #_loadComponents(app:any) { 
+        traceWriter.info("Loading component tree", TraceWriter.AREA_CODEGENERATION)
+        let tree =  RenderWidget.fromObject(app)  
+        traceWriter.info("Loaded component tree " + JSON.stringify(tree), TraceWriter.AREA_CODEGENERATION)
+        return Promise.resolve(tree);
+    }
+
+    async #_generateCode(target:any, tree:any, translation:Translation) { 
+        traceWriter.info("Starting code generation", TraceWriter.AREA_CODEGENERATION)
+        let code =  await RenderWidget.render(target, tree, translation) || ""
+        traceWriter.info("Code generation complete " + code, TraceWriter.AREA_CODEGENERATION)   
+        return code; 
     }
 }

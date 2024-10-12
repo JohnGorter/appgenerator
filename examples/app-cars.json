@@ -1,0 +1,14 @@
+
+{
+    "app":{
+        "target":"flutter",
+        "title":"Car selector!",
+        "subtitle":"john",
+        "style":"body { height:100%; } * { font-family:tahoma } div { display:flex;flex-flow:column;align-items:center;justify-content:center;height:100%}",
+        "children": [
+            { "apidatasource" : { "id":"1", "url":"http://127.0.0.1:1337/cars", "mapping": "title:make,subtitle:model,detailtext:detail,image:image" }},
+            { "list": { "source":"1", "id":"3", "triggers":"1"}},
+            { "detail": { "source":"1", "id":"4"}}
+        ]
+    }
+}

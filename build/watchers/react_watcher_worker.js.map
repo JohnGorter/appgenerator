@@ -1,0 +1,1 @@
+{"version":3,"file":"react_watcher_worker.js","sourceRoot":"","sources":["../../watchers/react_watcher_worker.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,KAAK,EAAE,MAAM,oBAAoB,CAAC;AAE3C,IAAI,KAAK,GAAG,KAAK,CAAC,aAAa,EAAE,EAAE,EAAE,EAAE,GAAG,EAAC,UAAU,EAAE,QAAQ,EAAE,IAAI,EAAE,KAAK,EAAE,CAAE,QAAQ,EAAE,QAAQ,EAAE,QAAQ,CAAC,EAAE,CAAC,CAAC;AACjH,KAAK,CAAC,KAAK,EAAE,CAAC"}

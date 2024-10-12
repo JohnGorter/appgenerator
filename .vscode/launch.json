@@ -11,8 +11,8 @@
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "program": "${workspaceFolder}/bin/jgen.js",
-            "args": ["app.json"],
+            "program": "./bin/jgen",
+            "args": ["run"],
             "outFiles": [
                 "${workspaceFolder}/**/*.js"
             ]
