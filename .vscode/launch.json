@@ -12,7 +12,7 @@
                 "<node_internals>/**"
             ],
             "program": "./bin/jgen",
-            "args": ["run"],
+            "args": ["run", "app.yml"],
             "outFiles": [
                 "${workspaceFolder}/**/*.js"
             ]

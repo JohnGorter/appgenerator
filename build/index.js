@@ -4,6 +4,7 @@ import { Translation } from './translation/translation.js';
 import { readFileSync, watchFile } from 'fs';
 import { traceWriter, TraceWriter } from './TraceWriter.js';
 import { RenderWidget } from './ast.js';
+import * as yaml from 'js-yaml';
 export default class JGen {
     async #_getTargetConfig(app) {
         traceWriter.info("Getting target from config targets.json file", TraceWriter.AREA_GENERAL);
@@ -15,7 +16,7 @@ export default class JGen {
         if (watch) {
             watchFile(appfile, async () => {
                 traceWriter.info("Starting a new run", TraceWriter.AREA_GENERAL);
-                let app = JSON.parse(readFileSync(appfile, 'utf-8'));
+                let app = appfile.endsWith(".yml") ? yaml.load(readFileSync(appfile, 'utf-8')) : JSON.parse(readFileSync(appfile, 'utf-8'));
                 console.log("compiling file");
                 let target = await this.#_getTargetConfig(app);
                 await this.compile(target, app);
@@ -23,12 +24,11 @@ export default class JGen {
             });
         }
         traceWriter.info("Starting a new run", TraceWriter.AREA_GENERAL);
-        let appdef = readFileSync(appfile, 'utf-8');
-        await this.startJSON(command, appdef, watch);
+        let app = appfile.endsWith(".yml") ? yaml.load(readFileSync(appfile, 'utf-8')) : JSON.parse(readFileSync(appfile, 'utf-8'));
+        await this._start(command, app, watch);
     }
-    async startJSON(command, appdef, watch = false) {
+    async _start(command, app, watch = false) {
         traceWriter.info("Starting a new run", TraceWriter.AREA_GENERAL);
-        let app = JSON.parse(appdef);
         console.log("compiling file");
         let target = await this.#_getTargetConfig(app);
         await this.compile(target, app);
@@ -64,6 +64,7 @@ export default class JGen {
         traceWriter.info("Starting code generation", TraceWriter.AREA_CODEGENERATION);
         let code = await RenderWidget.render(target, tree, translation) || "";
         traceWriter.info("Code generation complete " + code, TraceWriter.AREA_CODEGENERATION);
+        console.log("code", code);
         return code;
     }
 }

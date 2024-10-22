@@ -31,7 +31,7 @@ app.use("/flutter", express.static(__dirname + "/flutter/build/web"));
 app.use("/", express.static(__dirname + "/flutter/build/web"));
 
 app.post('/app', async (req, res) => {
-   await new JGen().startJSON("run", JSON.stringify(req.body), true)
+   await new JGen()._start("run", req.body, true)
    return res.redirect(`/${req.body.app.target}/index.html`);
 })
 

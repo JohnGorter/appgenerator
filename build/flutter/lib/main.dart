@@ -1,18 +1,7 @@
 import 'package:flutter/material.dart';
  
- 
-
-
-import 'package:http/http.dart' as http;
+ import 'package:http/http.dart' as http;
 import 'dart:convert';
-
-
-
-
-
-import 'dart:convert';
-
-
 
  class Item {
       String title;
@@ -87,11 +76,9 @@ class StateMnmgt {
 StateMnmgt statemanagement = StateMnmgt(); 
  
  
-
-
 class ApiDatasource extends ChangeNotifier {
   String url = "";
-  String mapping = "title:make,subtitle:model,detailtext:detail,image:image";
+  String mapping = "title:make,subtitle:model,image:image";
   List<String> errors = [];
   Item? selected;
 
@@ -150,15 +137,149 @@ class ApiDatasource extends ChangeNotifier {
              
 
 
-    List<ListTile> listviewchildren3= [];
+class DrawerWidget extends StatefulWidget {
+  final List<Widget> children;
+  final List<Widget> drawer;
+
+  DrawerWidget({super.key, required this.children, required this.drawer});
+
+  @override
+  State<DrawerWidget> createState() => _DrawerWidgetState();
+}
+
+class _DrawerWidgetState extends State<DrawerWidget> {
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(child:GestureDetector(
+          onTap:(){ drawerstate.hide(); setState((){});},
+          child:Stack(
+              fit: StackFit.loose,
+              children: [
+                Positioned.fill(child:Container(alignment: Alignment.topRight, color:Colors.green, child:Column(children:[
+                   
+                    TextButton(child:Text("Show menu"), onPressed:(){ drawerstate.toggle(); setState((){}); }),
+                    ...drawerstate.selected.children
+                   
+                ]))),
+                AnimatedPositioned(duration:Duration(milliseconds: 200), left:drawerstate.drawervisible? 0: -300, top:0, width:300, height: MediaQuery.of(context).size.height, child: Container(color:Colors.red, child:
+                Column(children:[
+                    ...drawerstate.items
+                ])))
+              ])
+            ));
+  }
+}
+
+
+
+
+
+class DrawerItem extends StatelessWidget {
+  final String id;
+  final List<Widget> children;
+  final Widget child; 
+  const DrawerItem({super.key, required this.id, required this.child, required this.children});
+
+  @override
+  Widget build(BuildContext context) {
+    return child;
+  }
+}
+
+
+
+class ListWidget extends StatefulWidget {
+  const ListWidget({super.key});
+
+  @override
+  State<ListWidget> createState() => _ListWidgetState();
+}
+
+class _ListWidgetState extends State<ListWidget> {
+  late Widget child;
+  @override void initState() {
+    // TODO: implement initState
+    super.initState();
+    child =  datasource1.getList().length > 0 ? Expanded(child:ListView(children:datasource1.getList().indexed.map((v) => ListTile(onTap: () { dynamic event = v.$2;datasource1.select(event);
+ },title:Text('${v.$2.title}'), subtitle:Text('${v.$2.subtitle}'))).toList())) : Expanded(child:Container(alignment:Alignment.center, color:Colors.green, child:Text('no data for list')));
+    datasource1.load(); 
+    datasource1.addListener(() {
+        child =  datasource1.getList().length > 0 ? Expanded(child:ListView(children:datasource1.getList().indexed.map((v) => ListTile(onTap: () { dynamic event = v.$2;datasource1.select(event);
+ },title:Text('${v.$2.title}'), subtitle:Text('${v.$2.subtitle}'))).toList())) : Expanded(child:Container(alignment:Alignment.center, color:Colors.green, child:Text('no data for list')));
+        setState((){});
+    }); 
+  }
+  @override
+  Widget build(BuildContext context) {
+    return child;
+  }
+}
+
+
+
+class DetailWidget extends StatefulWidget {
+
+  @override createState() => _DetailWidgetState();
+}
+
+class _DetailWidgetState extends State<DetailWidget> {
+late Widget child; 
+@override initState() {
+  super.initState(); 
+  child = Container(height:250 ,child:Column(children:[ Text("${datasource1.getValue()?.title}  ${datasource1.getValue()?.subtitle} ${datasource1.getValue()?.detailtext} "), if (datasource1.getValue()?.image != "") Container(width:300, child:Image.network(datasource1.getValue()?.image ?? "")) ]));
+  datasource1.addListener((){
+    child = Container(height:250 ,child:Column(children:[ Text("${datasource1.getValue()?.title}  ${datasource1.getValue()?.subtitle} ${datasource1.getValue()?.detailtext} "), if (datasource1.getValue()?.image != "") Container(width:300, child:Image.network(datasource1.getValue()?.image ?? "")) ]));
+    if (mounted) setState((){});
+  });
+}
+
+  @override 
+  Widget build (BuildContext context) {
+  return child;
+  }
+} 
+  
+ 
+ApiDatasource datasource1 = ApiDatasource(url:'http://localhost:1337/cars');
 
 
  
- 
+class DrawerState extends ChangeNotifier {
+    bool autohide = false || ('false'.length > 0 && 'false' != 'false');
+    bool _hide = false;
+    int _selected = 0; 
+    List<DrawerItem> items = [
+      
+    ];
+    bool get drawervisible => !_hide;
+    void hide() {
+      _hide = true; 
+      notifyListeners();
+    }
+    void show() {
+      _hide = false; 
+      notifyListeners();
+    }
+    void toggle() {
+      _hide = !_hide; 
+      notifyListeners();
+    }
 
+    void setSelected(String id){
+      _selected = items.indexOf(items.where((i) => i.id == id).first);
+      notifyListeners();
+    }
+    get selected { 
+      return items.length > 0 ?  items[_selected]: null; 
+    }
 
-ApiDatasource datasource1 = ApiDatasource(url:'http://127.0.0.1:1337/cars');
-
+}
+DrawerState drawerstate = DrawerState();
 
 
 
@@ -178,7 +299,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Car selestor!'),
+      home: const MyHomePage(title: 'Car Selector'),
     );
   }
 }
@@ -199,12 +320,54 @@ datasource1.addListener((){
   setState(() {});
 });
 datasource1.load(); 
-
-listviewchildren3.add(ListTile(title:Text("john")));
-
-
-
  
+drawerstate.items = [
+  
+DrawerItem(
+  id:'1',
+  children: [
+       
+ListWidget(),
+
+
+
+  ]
+  ,
+  child:Material(type: MaterialType.transparency, child:ListTile(selected:drawerstate.selected == 'hello world 1', selectedTileColor:Colors.redAccent.shade200, title:Text("hello world 1"), onTap:(){  drawerstate.setSelected('1'); if (drawerstate.autohide) drawerstate.hide();}))
+),
+
+DrawerItem(
+  id:'2',
+  children: [
+       
+DetailWidget(),
+
+
+
+  ]
+  ,
+  child:Material(type: MaterialType.transparency, child:ListTile(selected:drawerstate.selected == 'hello world 2', selectedTileColor:Colors.redAccent.shade200, title:Text("hello world 2"), onTap:(){  drawerstate.setSelected('2'); if (drawerstate.autohide) drawerstate.hide();}))
+),
+
+DrawerItem(
+  id:'3',
+  children: [
+       
+  ]
+  ,
+  child:Material(type: MaterialType.transparency, child:ListTile(selected:drawerstate.selected == 'hello world 3', selectedTileColor:Colors.redAccent.shade200, title:Text("hello world 3"), onTap:(){  drawerstate.setSelected('3'); if (drawerstate.autohide) drawerstate.hide();}))
+),
+
+];
+drawerstate.addListener(() { this.setState((){}); });
+
+
+
+
+
+
+
+
     super.initState();
   }
 
@@ -220,21 +383,13 @@ listviewchildren3.add(ListTile(title:Text("john")));
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             
-datasource1.getList()
-.length > 0 ? Expanded(child:ListView(children:datasource1.getList()
-.indexed.map((v) => ListTile(onTap: () { dynamic event = v.$2;datasource1.select(event);
- },title:Text('${v.$2.title}'), subtitle:Text('${v.$2.subtitle}'))).toList())) : Expanded(child:Container(alignment:Alignment.center, color:Colors.green, child:Text('no data for list'))),
+DrawerWidget(children:[...drawerstate.selected.children], 
+drawer:[
+  ...drawerstate.items
+])
 
 
-
-Container(height:250 ,child:Column(children:[ Text("${datasource1.getValue()
-?.title}  ${datasource1.getValue()
-?.subtitle} ${datasource1.getValue()
-?.detailtext} "), if (datasource1.getValue()
-?.image != "") Container(width:300, child:Image.network(datasource1.getValue()
-?.image ?? "")) ])),
-
-
+ 
           ],
         ),
       ), // This trailing comma makes auto-formatting nicer for build methods.

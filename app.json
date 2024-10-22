@@ -1,36 +1,22 @@
-
 {
   "app":{
       "target":"react",
-      "title":"Car selestor!",
+      "title":"Joey",
       "subtitle":"john",
-      "style":"body { height:100%; } * { font-family:tahoma } div { display:flex;flex-flow:column;align-items:center;justify-content:center;height:100%}",
+      "color":"red",
       "children": [
-        {"page": { 
-          "header": [
-              {"label": { "id":"23", "label":"test in header"}}
-           ], 
-           "footer":[
-              {"label": { "id":"23", "label":"test in footer"}}
-           ], "content":[
-              {"label": { "id":"23", "label":"test in content"}}
+        { "apidatasource" : { "id":"1", "url":"http://localhost:1337/cars", "mapping": "title:make,subtitle:model,image:image"  } },
+          { "drawer": { 
+            "drawer": [
+              { "detail" : { "emptylabel":"leeg", "source":"1" } }
+            ],
+            "children": [
+              { "list": { "source":"1", "id":"3", "triggers":"1"}
+            }
           ]
-          }},
-          { "drawer": { "id":"13", 
-              "drawer":[
-                {"label": { "id":"23", "label":"test in drawer"}}
-              ], 
-              "children": [
-                {"label": { "id":"23", "label":"test in content"}}
-              ] 
-          }},
-          { "apidatasource" : { "id":"1", "url":"http://127.0.0.1:1337/cars", "mapping": "title:make,subtitle:model,detailtext:detail,image:image" }},
-          {"column": { "children" : [
-              { "list": { "source":"1", "id":"3", "triggers":"1"}},
-              { "detail": { "source":"1", "id":"4"}}
-            ]
           }
         }
       ]
   }
 }
+

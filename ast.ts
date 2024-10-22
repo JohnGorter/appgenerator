@@ -15,6 +15,7 @@ export interface IRenderable {
 
 export class Renderable implements IRenderable {
     id:any
+    example:string = ""
     level:string = ''
 
     children:IRenderable[] = []
@@ -23,7 +24,6 @@ export class Renderable implements IRenderable {
         this.id = id;
         traceWriter.verbose("Copying over the state fron JSON to object", TraceWriter.AREA_TREEBUILDING)
         this.fromState(state);
-        console.log("after state:", this); 
     }
     fromState(s:Object)  {
         let me:any = this;
@@ -44,9 +44,10 @@ export class Renderable implements IRenderable {
             }
         }
     }
-    parseResult(result:string):string {
+    async parseResult(result:string):Promise<string> {
       let me:any = this;
       for (let k of Object.keys(me)) {
+        if (k == "example")  await globaltranslation?.getExample(this.constructor.name).then((example) => this.example = example)
         traceWriter.verbose(`Replacing template placeholder [[${k}]] with value ${me[k]}`, TraceWriter.AREA_CODEGENERATION);
         if (!Array.isArray(me[k]))
         result = result.replaceAll(`[[${k}]]`, me[k])
@@ -97,16 +98,12 @@ export class Renderable implements IRenderable {
                     traceWriter.verbose(`Rendering child: ${c}`, TraceWriter.AREA_CODEGENERATION);
                     template = await c.render(this.level, template, arr) 
                }
-               if (me.constructor.name == "page") console.log(`removing [[${'.'.repeat(this.level.length)}${arr}]] from template`); 
                template = template.replaceAll(`[[${'.'.repeat(this.level.length)}${arr}]]`, ``); 
            
             }
         }
 
         traceWriter.verbose(`Completed template ${template}`, TraceWriter.AREA_CODEGENERATION);
-
-        // remove my placeholder
-       
         return template;
     }
 
@@ -141,10 +138,12 @@ export class Renderable implements IRenderable {
         let result =  await globaltranslation!.getTemplate(this.constructor.name.toLowerCase(),scope);
         if (!result) return ""
 
+        if (scope == "execution" && this.example) result = result + '<pre className="example">{`' + this.example + '`}</pre>' 
+        
         traceWriter.verbose(`Config ${config}`, TraceWriter.AREA_CODEGENERATION);
         traceWriter.verbose(`Template ${result} for scope ${scope}`, TraceWriter.AREA_CODEGENERATION);
 
-        let template = this.parseResult(result);
+        let template = await this.parseResult(result);
 
         let sup = `[[setup]]`
         let usup = `[[${this.level}setup]]`
@@ -159,12 +158,6 @@ export class Renderable implements IRenderable {
 
         let me:any = this;
         let statements = "";
-        if (me.source) {
-            statements = this._renderStatements("source", [me.source], config?.defaultGetter || "getValue");
-        }
-        template = template.replaceAll(`##SOURCE##`, statements)
-        
-        statements = "";
         if (me.triggers) {
             let triggers = me.triggers.split(",")
             statements = this._renderStatements("trigger", triggers, me.action || config?.defaultAction || "refresh")
@@ -233,7 +226,11 @@ export class RenderWidget {
 
     static async _collectImportLines(root:Renderable, lines:String[]) {
         let line = await root.renderImportScope();
-        if (!lines.find(l => l == line)) lines.push(line);
+        let klines = line.split('\n')
+        if (klines.length > 0)
+            for (let kline of klines) {
+                if (!lines.find(l => l == kline)) lines.push(kline);
+            }
         for (let arr of Object.keys(root)) {
             if (Array.isArray((root as any)[arr])) {
                 for (let c of (root as any)[arr]){
@@ -303,7 +300,7 @@ export class RenderWidget {
             let imports = '// [[imports]]'
             let styles = '// [[styles]]'
 
-            template = root.parseResult(template)
+            template = await root.parseResult(template)
             
 
             // walk the tree and render the global section
@@ -341,6 +338,6 @@ export class RenderWidget {
                     }
                 }
             }
-            return template.replaceAll(gs, "").replaceAll(imports, "").replaceAll(usup, "").replaceAll(ulsp, "").replaceAll(styles, "")
+            return template.replaceAll(gs, "").replaceAll(imports, "").replaceAll(usup, "").replaceAll(ulsp, "").replaceAll(styles, "").replaceAll(/\[\[[a-z]+\]\]/gi,"");
     }
 }

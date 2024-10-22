@@ -7,6 +7,7 @@ link.innerHTML = `
 document.head.appendChild(link);
 
 // [[global]]
+const datasource = undefined;
 
 class App extends window.React.Component
 {

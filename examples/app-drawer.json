@@ -1,0 +1,39 @@
+
+{
+  "app":{
+      "target":"react",
+      "title":"Car selestor!",
+      "subtitle":"john",
+      "children": [
+        {"page": { 
+          "header": [
+              {"label": { "id":"23", "label":"test in header"}}
+           ], 
+           "footer":[
+              {"label": { "id":"23", "label":"test in footer"}}
+           ], "content":[
+              {"label": { "id":"23", "label":"test in content"}}
+          ]
+          }},
+          { "drawer": { "example":"1", "id":"13", "autohide":"true",
+              "drawer":[
+                {"draweritem": { "id":"23", "label":"test in drawer"}},
+                {"draweritem": { "id":"231", "label":"test in drawer"}},
+                {"draweritem": { "id":"223", "selected":"selected", "label":"test in drawer"}},
+                {"draweritem": { "id":"233", "label":"test in drawer"}},
+                {"draweritem": { "id":"233", "label":"test in drawer"}}
+              ], 
+              "children": [
+                {"label": { "id":"23", "label":"test in content"}}
+              ] 
+          }},
+          { "apidatasource" : { "id":"1", "url":"http://127.0.0.1:1337/cars", "mapping": "title:make,subtitle:model,detailtext:detail,image:image" }},
+          {"column": { "children" : [
+              { "list": { "source":"1", "id":"3", "triggers":"1"}},
+              { "detail": { "source":"1", "id":"4"}}
+            ]
+          }
+        }
+      ]
+  }
+}

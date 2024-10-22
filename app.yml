@@ -1,0 +1,32 @@
+app:
+  target: react
+  title: Car Selector
+  subtitle: john
+  color: red
+  children:
+    - apidatasource:
+        id: '1'
+        url: http://localhost:1337/cars
+        mapping: title:make,subtitle:model,image:image
+    - drawer:
+        autohide: false
+        drawer:
+          - draweritem: 
+              id: '1'
+              title: 'hello world 1'
+              children:
+                - list:
+                    source: '1'
+                    id: '3'
+                    triggers: '1'
+          - draweritem: 
+              id: '2'
+              title: 'hello world 2'
+              children: 
+                - detail:
+                    emptylabel: leeg
+                    source: '1'
+          - draweritem:
+              id: '3'
+              title: 'hello world 3' 
+       

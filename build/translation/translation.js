@@ -31,7 +31,35 @@ export class Translation {
         if (end > 0)
             template = template.substring(0, end);
         traceWriter.info(`Returning ${template}"`, TraceWriter.AREA_CODEGENERATION);
-        return Promise.resolve(template);
+        return Promise.resolve(template.replaceAll(marker, ""));
+    }
+    async getExample(classname) {
+        let extension = this.#target == "flutter" ? "dart" : "js";
+        traceWriter.info(`Trying to retrieve template "./translation/${this.#target}/${classname}.${extension}"`, TraceWriter.AREA_CODEGENERATION);
+        if (fs.existsSync(`./translation/${this.#target}/${classname}.${extension}`)) {
+            // read template from template file
+            let data = fs.readFileSync(`./translation/${this.#target}/${classname}.${extension}`, 'utf8');
+            traceWriter.info(`Retrieved template "./translation/${this.#target}/${classname}.${extension}"`, TraceWriter.AREA_CODEGENERATION);
+            return this.returnDataForScope(data, "example");
+        }
+        else {
+            traceWriter.info(`No file, retieve translation from translation map`, TraceWriter.AREA_CODEGENERATION);
+            let m = await import(`./translationmap.${this.#target}.js`);
+            let url = m.translationmap.get(`${classname}`)?.url;
+            if (url) {
+                traceWriter.info(`Retrieving url ${url}`, TraceWriter.AREA_CODEGENERATION);
+                url = url.replace("https://github.com", "https://raw.githubusercontent.com").replace("/blob", "");
+                traceWriter.info(`Retrieving url ${url}`, TraceWriter.AREA_CODEGENERATION);
+                // replace obvious mistaktes to be more intuitive..
+                let data = await Cache.setGet(url);
+                return this.returnDataForScope(data, "example");
+            }
+            else {
+                traceWriter.info(`Retrieving example`, TraceWriter.AREA_CODEGENERATION);
+                let template = m.translationmap.get(`${classname}${'_example'}`)?.template;
+                return template;
+            }
+        }
     }
     async getTemplate(classname, scope) {
         let extension = this.#target == "flutter" ? "dart" : "js";

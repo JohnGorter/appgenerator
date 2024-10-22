@@ -2,4 +2,4 @@
 //#pragma: declaration
 let MyLabel = ({text, click}) => <div onClick={click}>{text}</div>
 //#pragma: execution
-<div><MyLabel text={##SOURCE##+'' || '[[label]]'} click={() => {##TRIGGERS##}}> </MyLabel></div>
+<div><MyLabel text={datasource[[source]] ? datasource[[source]].getValue() +'' : '[[label]]'} click={() => {##TRIGGERS##}}> </MyLabel></div>
